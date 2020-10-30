@@ -17,7 +17,40 @@ class Item:
     self.updates = updates
 
     self.category = 'item'
-
+    
+    
+  def display_description(self):
+    word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
+    comma = word(', ')
+    none_string = f"{Colours.fg.cyan}_ _ _ _ _ _ _ _ _ "
+    res = [none_string, none_string, none_string]
+    
+    attribute_strings = { Player.armour.defense : "Player's defense"
+                          Player.armour.weight : "Player's armour weight"
+                          Player.weapon.accuracy : "Player's weapon accuracy"
+                          Player.weapon.crit_chance : "Player's weapon crit chance"
+                          
+                          Player.current_enemy.armour.defense : "Enemy's defense"
+                          Player.current_enemy.armour.weight : "Enemy's armour weight"
+                          Player.current_enemy.weapon.accuracy : "Enemy's weapon accuracy"
+                          Player.current_enemy.weapon.crit_chance : "Enemy's weapon crit chance"
+    }
+    
+    #Increased effects AKA res[0]
+    increased_attributes = " "
+    increased_by = " "
+    for attribute in self.increased:
+      if attribute not is Player.current_health:
+        increased_attributes += word(attribute_strings[attribute]) + comma
+        increased_by += word(self.increased[attribute])
+        
+        string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
+        res[0] = string_to_add
+        
+    #Decreased effects AKA res[1]
+    
+    #Updated effects AKA res[2]
+       
 
 
 vial_of_healing = Item("Vial of Healing", 25, 2, increases={Player.current_health : 25}
