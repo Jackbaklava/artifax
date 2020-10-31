@@ -23,6 +23,7 @@ class Item:
     word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
     comma = word(', ')
     none_string = f"{Colours.fg.cyan}_ _ _ _ _ _ _ _ _ "
+    
     res = [none_string, none_string, none_string]
     
     attribute_strings = { Player.armour.defense : "Player's defense"
@@ -39,17 +40,40 @@ class Item:
     #Increased effects AKA res[0]
     increased_attributes = " "
     increased_by = " "
-    for attribute in self.increased:
+    
+    for attribute in self.increases:
       if attribute not is Player.current_health:
-        increased_attributes += word(attribute_strings[attribute]) + comma
-        increased_by += word(self.increased[attribute])
+        increased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
+        increased_by += word(self.increases[attribute], Colours.attribute_colour)
         
         string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
         res[0] = string_to_add
         
     #Decreased effects AKA res[1]
+    decreased_attributes = " "
+    decreased_by = " "
+    
+    for attribute in self.decreases:
+      decreased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
+      decreased_by += word(self.decreases[attribute], Colours.attribute_colour)
+        
+      string_to_add = word('Decreased') + decreased_attributes + word('by') + decreased_by
+      res[1] = string_to_add
     
     #Updated effects AKA res[2]
+    updated_attribute = " "
+    updated_from = " "
+    updated_to = " "
+    
+    for attribute in self.updates:
+      updated_attribute = word(attribute_strings[attribute], Colours.attribute_colour)
+      updated_from = word(self.updates[attribute][0], Colours.attribute_colour)
+      updated_to = word(self.updates[attribute][1], Colours.attribute_colour)
+      
+      string_to_add = word("Updated") + updated_attribute + word("from") + updated_from + word("to") + updated_to
+      res[2] = string_to_add
+      
+    return res
        
 
 
@@ -59,9 +83,9 @@ vial_of_healing = Item("Vial of Healing", 25, 2, increases={Player.current_healt
 flask_of_healing = Item("Flask of Healing", 25, 2, increases={Player.current_health : 50}
 )
 
-kings_elixir = Item("King's Elixir", 25, 2, increases=     {Player.armour.defense : 0.1,
+kings_elixir = Item("King's Elixir", 25, 2, increases={Player.armour.defense : 0.1,
  Player.weapon.accuracy : 5},
-updates={Player.armour.weight : "Light"}
+updates={Player.armour.weight : (Player.armour.weight, "Light")}
 )
 
 dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={Player.current_enemy.armour.defense : 0.2}
@@ -294,7 +318,7 @@ class PlayerInventory:
         decreases_by = item_to_use.decreases[attribute]
           
         if attribute is Player.current_enemy.weapon.accuracy:
-          #Increases because we are choosing a random number from accuracy
+          #Adds because we are choosing a random number from accuracy
           attribute[1] += decreases_by
           
         elif attribute is Player.current_enemy.armour.defense or attribute is Player.current_enemy.weapon.crit_chance:
@@ -302,8 +326,7 @@ class PlayerInventory:
       
       #Updating effects
       for attribute in item_to_use.updates:
-        updates_to = item_to_use.updates[attribute]
-        attribute = updates_to
+        attribute = item_to_use.updates[attribute][1]
       
       #Incrementing affected_terms by item
       if not item_to_use.increases is Player.current_health:
