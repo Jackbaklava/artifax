@@ -150,8 +150,12 @@ def display_equipment_stats(key,  display_price=True, item_quantity=''):
 """)
     
   elif isinstance(specific_equipment, Item):
+    description_to_display = specific_equipment.display_description()
+    
     print(f"""{key_to_display}{Colours.fg.red}{item_quantity}{specific_equipment.name_string}
-{space_to_display}{Colours.fg.orange}Description: {specific_equipment.description}
+{space_to_display}{description_to_display[0]}
+{space_to_display}{description_to_display[1]}
+{space_to_display}{description_to_display[2]}
 {price_string}
 """)
 
