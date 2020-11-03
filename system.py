@@ -12,16 +12,14 @@ def sleep_and_clear(seconds=1):
   sleep(seconds)
   clear()
 
-#Need to fix this mess
-# def check_for_vowel(string_to_check):
-#   vowels = ('a', 'e', 'i', 'o', 'u')
-#   res = 'a'
 
-#   if string_to_check[0] in vowels:
-#     res += 'n'
+def calculate_percentage(percentage, current=None, total=None):
+  if current == None:
+    res = total * percentage / 100
+  else:
+    res = current * 100 / percentage
     
-#   res += ' '
-#   return res + string_to_check
+  return res
 
 
 print_one_liner = lambda string: print(string * 130)
