@@ -2,7 +2,7 @@ from colours import Colours
 import exploration
 import items
 from setting import rune_of_daylight, primal_shard, tablet_of_destiny, azures_gauntlet, all_artifacts, all_locations
-from system import sleep, clear, sleep_and_clear, print_heading
+from system import sleep, clear, sleep_and_clear, print_heading, calculate_percentage
 import random as rdm
 
 
@@ -19,6 +19,7 @@ class Weapon:
     self.category = 'weapon'
 
     self.str_damage = f"{damage[0]} - {damage[1]} "
+    
     first_calc = self.accuracy - 1
     self.str_accuracy = f"{round(first_calc / self.accuracy * 100, 2)}%"
     self.str_crit_chance = f"{round(self.crit_chance ** -1 * 100, 2)}%"
@@ -145,7 +146,7 @@ class Player:
       cls.current_location = all_locations[player_choice]
 
       clear()
-      print(f"{Colours.fg.orange}You successfully travelled to {Player.current_location.colour + Colours.underline + Colours.bold}{Player.current_location.name}{Colours.reset + Colours.fg.orange}.")
+      print(f"{Colours.fg.orange}You travelled to {Player.current_location.colour + Colours.underline + Colours.bold}{Player.current_location.name}{Colours.reset + Colours.fg.orange}.")
 
       sleep_and_clear(2)
 
@@ -169,7 +170,8 @@ class Player:
 
   @classmethod
   def heal(cls, percentage_to_heal):
-    value_to_heal = percentage_to_heal / 100 * cls.max_health
+    value_to_heal = calculate_percentage(percentage_to_heal, total=cls.max_health)
+    
     cls.current_health += value_to_heal
     
     if cls.current_health > cls.max_health:

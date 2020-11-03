@@ -27,6 +27,7 @@ class Colours:
 
   input_colour = fg.orange
   equipment_colour = fg.lightblue
+  attribute_colour = fg.lightblue
   enemy_colour = fg.red + bold
   tag_colour = fg.green + underline
   
