@@ -21,18 +21,19 @@ class Item:
   def display_description(self):
     word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
     comma = word(', ')
-    none_string = f"{Colours.fg.cyan}_ _ _ _ _ _ _ _ _ "
+    none_string = f"{Colours.fg.cyan}- - - - - - - -"
     
     res = [none_string, none_string, none_string]
     
-    attribute_strings = { Player.armour.defense : "Player's defense"
-                          Player.armour.weight : "Player's armour weight"
-                          Player.weapon.accuracy : "Player's weapon accuracy"
-                          Player.weapon.crit_chance : "Player's weapon crit chance"
+    attribute_strings = { Player.current_health : "Player's health",
+                          Player.armour.defense : "Player's defense",
+                          Player.armour.weight : "Player's armour weight",
+                          Player.weapon.accuracy : "Player's weapon accuracy",
+                          Player.weapon.crit_chance : "Player's weapon crit chance",
                           
-                          Player.current_enemy.armour.defense : "Enemy's defense"
-                          Player.current_enemy.armour.weight : "Enemy's armour weight"
-                          Player.current_enemy.weapon.accuracy : "Enemy's weapon accuracy"
+                          Player.current_enemy.armour.defense : "Enemy's defense",
+                          Player.current_enemy.armour.weight : "Enemy's armour weight",
+                          Player.current_enemy.weapon.accuracy : "Enemy's weapon accuracy",
                           Player.current_enemy.weapon.crit_chance : "Enemy's weapon crit chance"
     }
     
@@ -41,12 +42,11 @@ class Item:
     increased_by = " "
     
     for attribute in self.increases:
-      if attribute not is Player.current_health:
-        increased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
-        increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%')
+      increased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
+      increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%, ')
         
-        string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
-        res[0] = string_to_add
+      string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
+      res[0] = string_to_add
         
     #Decreased effects AKA res[1]
     decreased_attributes = " "
@@ -54,9 +54,9 @@ class Item:
     
     for attribute in self.decreases:
       decreased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
-      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%')
+      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%, ')
         
-      string_to_add = word('Decreased') + decreased_attributes + word('by') + decreased_by
+      string_to_add = word('Decreased') + decreased_attributes + word('by ') + decreased_by
       res[1] = string_to_add
     
     #Updated effects AKA res[2]
@@ -65,11 +65,11 @@ class Item:
     updated_to = " "
     
     for attribute in self.updates:
-      updated_attribute = word(attribute_strings[attribute], Colours.attribute_colour)
-      updated_from = word(self.updates[attribute][0], Colours.attribute_colour)
-      updated_to = word(self.updates[attribute][1], Colours.attribute_colour)
+      updated_attribute = word(attribute_strings[attribute], Colours.attribute_colour) + ' '
+      updated_from = word(self.updates[attribute][0], Colours.updated_attribute_colour) + ' '
+      updated_to = word(self.updates[attribute][1], Colours.updated_attribute_colour) + ' '
       
-      string_to_add = word("Updated") + updated_attribute + word("from") + updated_from + word("to") + updated_to
+      string_to_add = word('Updated ') + updated_attribute + word('from ') + updated_from + word('to ') + updated_to
       res[2] = string_to_add
       
     return res
@@ -82,12 +82,12 @@ vial_of_healing = Item("Vial of Healing", price=25, increases={Player.current_he
 flask_of_healing = Item("Flask of Healing", price=25, increases={Player.current_health : 50}
 )
 
-kings_elixir = Item("King's Elixir", price=25, 2, increases={Player.armour.defense : 25,
+kings_elixir = Item("King's Elixir", 25, 2, increases={Player.armour.defense : 25,
  Player.weapon.accuracy : 50},
 updates={Player.armour.weight : (Player.armour.weight, "Light")}
 )
 
-dragons_amulet = Item("Dragon's Amulet", price=25, 2, decreases={Player.current_enemy.armour.defense : 50}
+dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={Player.current_enemy.armour.defense : 50}
 )
 
 
