@@ -8,7 +8,7 @@ import random as rdm
 
 
 class Weapon:
-  def __init__(self, name, damage, accuracy, crit_chance=1, price=0, can_drop=False):
+  def __init__(self, name, damage, accuracy, crit_chance=10, price=0, can_drop=False):
     self.name_string = f"{Colours.equipment_colour}{name}"
     self.damage = damage
     self.accuracy = accuracy
@@ -276,7 +276,7 @@ class Player:
 
   
       cls.current_enemy.current_health -= damage_taken
-      print(f"{Colours.fg.cyan}You attacked {cls.current_enemy.name_string}{Colours.fg.cyan} with your {cls.weapon.name_string}{Colours.fg.cyan},and dealt {Colours.fg.orange}{damage_taken} damage{Colours.fg.cyan}.")
+      print(f"{Colours.fg.cyan}You attacked {cls.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_taken} damage{Colours.fg.cyan}.")
       sleep_and_clear(1.5)
 
 
