@@ -19,7 +19,7 @@ def calculate_percentage(percentage, current=None, total=None):
   else:
     res = current * 100 / percentage
     
-  return res
+  return int(res)
 
 
 print_one_liner = lambda string: print(string * 130)

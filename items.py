@@ -17,13 +17,13 @@ class Item:
 
     self.category = 'item'
     
-    
-  def display_description(self):
+  
+    #Creating the item's description
     word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
     comma = word(', ')
     none_string = f"{Colours.fg.cyan}- - - - - - - -"
     
-    res = [none_string, none_string, none_string]
+    self.description = [none_string, none_string, none_string]
     
     attribute_strings = { Player.current_health : "Player's health",
                           Player.armour.defense : "Player's defense",
@@ -37,7 +37,7 @@ class Item:
                           Player.current_enemy.weapon.crit_chance : "Enemy's weapon crit chance"
     }
     
-    #Increased effects AKA res[0]
+    #Increased effects AKA description[0]
     increased_attributes = " "
     increased_by = " "
     
@@ -46,9 +46,9 @@ class Item:
       increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%, ')
         
       string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
-      res[0] = string_to_add
+      self.description[0] = string_to_add
         
-    #Decreased effects AKA res[1]
+    #Decreased effects AKA description[1]
     decreased_attributes = " "
     decreased_by = " "
     
@@ -57,9 +57,9 @@ class Item:
       decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%, ')
         
       string_to_add = word('Decreased') + decreased_attributes + word('by ') + decreased_by
-      res[1] = string_to_add
+      self.description[1] = string_to_add
     
-    #Updated effects AKA res[2]
+    #Updated effects AKA description[2]
     updated_attribute = " "
     updated_from = " "
     updated_to = " "
@@ -70,25 +70,19 @@ class Item:
       updated_to = word(self.updates[attribute][1], Colours.updated_attribute_colour) + ' '
       
       string_to_add = word('Updated ') + updated_attribute + word('from ') + updated_from + word('to ') + updated_to
-      res[2] = string_to_add
+      self.description[2] = string_to_add
       
-    return res
        
 
 
-vial_of_healing = Item("Vial of Healing", price=25, increases={Player.current_health : 25}
-)
+vial_of_healing = Item("Vial of Healing", price=25, increases={Player.current_health : 25})
 
-flask_of_healing = Item("Flask of Healing", price=25, increases={Player.current_health : 50}
-)
+flask_of_healing = Item("Flask of Healing", price=25, increases={Player.current_health : 50})
 
-kings_elixir = Item("King's Elixir", 25, 2, increases={Player.armour.defense : 25,
- Player.weapon.accuracy : 50},
-updates={Player.armour.weight : (Player.armour.weight, "Light")}
-)
+kings_elixir = Item("King's Elixir", 25, 2, increases={Player.armour.defense : 25, Player.weapon.accuracy : 50}, 
+updates={Player.armour.weight : (Player.armour.weight, "Light")})
 
-dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={Player.current_enemy.armour.defense : 50}
-)
+dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={Player.current_enemy.armour.defense : 50})
 
 
 all_items = { "vlohg" : vial_of_healing,
@@ -149,7 +143,7 @@ def display_equipment_stats(key,  display_price=True, item_quantity=''):
 """)
     
   elif isinstance(specific_equipment, Item):
-    description_to_display = specific_equipment.display_description()
+    description_to_display = specific_equipment.description
     
     print(f"""{key_to_display}{Colours.fg.red}{item_quantity}{specific_equipment.name_string}
 {space_to_display}{description_to_display[0]}
@@ -193,7 +187,7 @@ class PlayerInventory:
 
     for key in cls.items_dict:
       if cls.items_dict[key] == [None, 0]:
-        print(f"{Colours.fg.green + Colours.underline}[{key}]{Colours.reset + Colours.fg.orange} - - - - - - - -")
+        print(f"{Colours.tag(key)} {Colours.fg.cyan} - - - - - - - -")
         print('\n')
       else:
         display_equipment_stats(key, display_price=False, item_quantity=cls.items_dict[key][1])
@@ -324,6 +318,10 @@ class PlayerInventory:
       
       #Incrementing affected_terms by item
       Player.current_item_effects[item_to_use.name] = item_to_use.affected_turns
+      
+      clear()
+      print(f"{Colours.fg.orange}You used {item_to_use.name_string}{Colours.fg.orange}.")
+      sleep_and_clear(2)
 
 
     return player_choice in cls.items_dict

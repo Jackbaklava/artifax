@@ -26,8 +26,8 @@ class Colours:
     black ='\033[40m'
 
   input_colour = fg.orange
-  equipment_colour = fg.red
-  attribute_colour = fg.lightblue
+  equipment_colour = fg.lightblue
+  attribute_colour = fg.blue
   updated_attribute_colour = fg.pink
   enemy_colour = fg.red + bold
   tag_colour = fg.green + underline
