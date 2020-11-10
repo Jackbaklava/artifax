@@ -17,6 +17,7 @@ class Weapon:
     self.can_drop = can_drop
     
     self.category = 'weapon'
+    self.local_variables = locals()
 
     self.str_damage = f"{damage[0]} - {damage[1]} "
     
@@ -53,6 +54,7 @@ class Armour:
     self.can_drop = can_drop
     
     self.category = 'armour'
+    self.local_variables = locals()
 
     self.str_defense =  f"{int(100 - self.defense * 100)}%"
 
@@ -96,6 +98,8 @@ all_player_armour = { "cl" : chainmail,
 class TemporaryEnemy:
   armour = darkmail
   weapon = rusty_sword
+
+  local_variables = locals()
 
 
 
@@ -314,7 +318,6 @@ class Enemy:
   def __init__(self, name, max_health, armour, weapon, spawn_location, spawn_range, gold_coins_drop=(1,50)):
     self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
     self.max_health = max_health
-    
     self.armour = armour
     self.weapon = weapon
     
@@ -322,6 +325,7 @@ class Enemy:
     self.spawn_range = range(spawn_range[0], spawn_range[1])
     
     self.gold_coins_drop = gold_coins_drop
+    self.local_attributes = locals()
 
 
   def attack(self):
