@@ -5,7 +5,7 @@ from system import clear, sleep, sleep_and_clear, print_one_liner, print_heading
 
 
 class Item:
-  def __init__(self, name, price, affected_turns=0, increases={}, decreases={}, updates={}):
+  def __init__(self, name, price, affected_turns=0, increases={}, decreases={}):
     self.name = name
     self.name_string = f"{Colours.equipment_colour}{name}"
     self.price = price
@@ -13,7 +13,6 @@ class Item:
     self.affected_turns = affected_turns
     self.increases = increases
     self.decreases = decreases
-    self.updates = updates
 
     self.category = 'item'
     
@@ -23,25 +22,14 @@ class Item:
     comma = word(', ')
     none_string = f"{Colours.fg.cyan}- - - - - - - -"
     
-    self.description = [none_string, none_string, none_string]
-    
-    attribute_strings = { "Player.current_health" : "Player's health",
-                          "Player.armour.defense" : "Player's defense",
-                          "Player.armour.weight" : "Player's armour weight",
-                          "Player.weapon.accuracy" : "Player's weapon accuracy",
-                          "Player.weapon.crit_chance" : "Player's weapon crit chance",
-                          
-                          "Player.current_enemy.armour.defense" : "Enemy's defense",
-                          "Player.current_enemy.armour.weight" : "Enemy's armour weight",
-                          "Player.current_enemy.weapon.accuracy" : "Enemy's weapon accuracy",
-                          "Player.current_enemy.weapon.crit_chance" : "Enemy's weapon crit chance"
-    }
+    self.description = [none_string, none_string]
     
     #Increased effects AKA description[0]
     increased_attributes = " "
     increased_by = " "
     
     for attribute in self.increases:
+      attribute_to_add = attribute.split('.')
       increased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
       increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%, ')
         
@@ -58,31 +46,16 @@ class Item:
         
       string_to_add = word('Decreased') + decreased_attributes + word('by ') + decreased_by
       self.description[1] = string_to_add
-    
-    #Updated effects AKA description[2]
-    updated_attribute = " "
-    updated_from = " "
-    updated_to = " "
-    
-    for attribute in self.updates:
-      updated_attribute = word(attribute_strings[attribute], Colours.attribute_colour) + ' '
-      updated_from = word(self.updates[attribute][0], Colours.updated_attribute_colour) + ' '
-      updated_to = word(self.updates[attribute][1], Colours.updated_attribute_colour) + ' '
-      
-      string_to_add = word('Updated ') + updated_attribute + word('from ') + updated_from + word('to ') + updated_to
-      self.description[2] = string_to_add
-      
-       
+           
 
 
-vial_of_healing = Item("Vial of Healing", price=25, increases={"Player.current_health" : 25})
+vial_of_healing = Item("Vial of Healing", price=25, increases={"current_health" : 25})
 
-flask_of_healing = Item("Flask of Healing", price=25, increases={"Player.current_health" : 50})
+flask_of_healing = Item("Flask of Healing", price=25, increases={"current_health" : 50})
 
-kings_elixir = Item("King's Elixir", 25, 2, increases={"Player.armour.defense" : 25, "Player.weapon.accuracy" : 50}, 
-updates={"Player.armour.weight" : (Player.armour.weight, "Light")})
+kings_elixir = Item("King's Elixir", 25, 2, increases={"armour.defense" : 25, "weapon.accuracy" : 50})
 
-dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={"Player.current_enemy.armour.defense" : 50})
+dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={"armour.defense" : 50})
 
 
 all_items = { "vlohg" : vial_of_healing,
@@ -295,30 +268,30 @@ class PlayerInventory:
     if player_choice != 'back':
       item_to_use = cls.items_dict[player_choice][0]
       cls.remove_item(player_choice)
+
+      numbers_to_round = ("weapon.accuracy", "weapon.crit_chance")
       
       #Increasing effects
       for attribute in item_to_use.increases:
         increases_by = calculate_percentage(percentage=item_to_use.increases[attribute], total=attribute)
-        if attribute == "Player.weapon.accuracy" or attribute == "Player.weapon.crit_chance":
+        if attribute in numbers_to_round:
           increases_by = round(increases_by)
         
         if attribute is Player.current_health:
           Player.heal(item_to_use.increases[attribute])
           
         else:
-          attribute -= increases_by
+          object_chain = attribute.split('.')
+          Player.local_attributes[object_chain[0]].local_attributes[object_chain[1]] -= increases_by
       
       #Decreasing effects
       for attribute in item_to_use.decreases:
         decreases_by = calculate_percentage(percentage=item_to_use.decreases[attribute], total=attribute)
-        if attribute == "Player.current_enemy.weapon.accuracy" or attribute == "Player.current_enemy.weapon.crit_chance":
+        if attribute in numbers_to_round:
           decreases_by = round(decreases_by)
           
-        attribute += decreases_by
-      
-      #Updating effects
-      for attribute in item_to_use.updates:
-        attribute = item_to_use.updates[attribute][1]
+        object_chain = attribute.split('.')
+        Player.current_enemy.local_attributes[object_chain[0]].local_attributes[object_chain[1]] += increases_by
       
       #Incrementing affected_terms by item
       Player.current_item_effects[item_to_use.name] = item_to_use.affected_turns
