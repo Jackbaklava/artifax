@@ -120,6 +120,8 @@ class Player:
   current_item_effects = { "King's Elixir" : 0,
                            "Dragon's Amulet" : 0
   }
+  
+  local_variables = locals()
 
 
   @classmethod

@@ -25,16 +25,16 @@ class Item:
     
     self.description = [none_string, none_string, none_string]
     
-    attribute_strings = { Player.current_health : "Player's health",
-                          Player.armour.defense : "Player's defense",
-                          Player.armour.weight : "Player's armour weight",
-                          Player.weapon.accuracy : "Player's weapon accuracy",
-                          Player.weapon.crit_chance : "Player's weapon crit chance",
+    attribute_strings = { "Player.current_health" : "Player's health",
+                          "Player.armour.defense" : "Player's defense",
+                          "Player.armour.weight" : "Player's armour weight",
+                          "Player.weapon.accuracy" : "Player's weapon accuracy",
+                          "Player.weapon.crit_chance" : "Player's weapon crit chance",
                           
-                          Player.current_enemy.armour.defense : "Enemy's defense",
-                          Player.current_enemy.armour.weight : "Enemy's armour weight",
-                          Player.current_enemy.weapon.accuracy : "Enemy's weapon accuracy",
-                          Player.current_enemy.weapon.crit_chance : "Enemy's weapon crit chance"
+                          "Player.current_enemy.armour.defense" : "Enemy's defense",
+                          "Player.current_enemy.armour.weight" : "Enemy's armour weight",
+                          "Player.current_enemy.weapon.accuracy" : "Enemy's weapon accuracy",
+                          "Player.current_enemy.weapon.crit_chance" : "Enemy's weapon crit chance"
     }
     
     #Increased effects AKA description[0]
@@ -75,14 +75,14 @@ class Item:
        
 
 
-vial_of_healing = Item("Vial of Healing", price=25, increases={Player.current_health : 25})
+vial_of_healing = Item("Vial of Healing", price=25, increases={"Player.current_health" : 25})
 
-flask_of_healing = Item("Flask of Healing", price=25, increases={Player.current_health : 50})
+flask_of_healing = Item("Flask of Healing", price=25, increases={"Player.current_health" : 50})
 
-kings_elixir = Item("King's Elixir", 25, 2, increases={Player.armour.defense : 25, Player.weapon.accuracy : 50}, 
-updates={Player.armour.weight : (Player.armour.weight, "Light")})
+kings_elixir = Item("King's Elixir", 25, 2, increases={"Player.armour.defense" : 25, "Player.weapon.accuracy" : 50}, 
+updates={"Player.armour.weight" : (Player.armour.weight, "Light")})
 
-dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={Player.current_enemy.armour.defense : 50})
+dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={"Player.current_enemy.armour.defense" : 50})
 
 
 all_items = { "vlohg" : vial_of_healing,
@@ -299,6 +299,8 @@ class PlayerInventory:
       #Increasing effects
       for attribute in item_to_use.increases:
         increases_by = calculate_percentage(percentage=item_to_use.increases[attribute], total=attribute)
+        if attribute == "Player.weapon.accuracy" or attribute == "Player.weapon.crit_chance":
+          increases_by = round(increases_by)
         
         if attribute is Player.current_health:
           Player.heal(item_to_use.increases[attribute])
@@ -309,6 +311,8 @@ class PlayerInventory:
       #Decreasing effects
       for attribute in item_to_use.decreases:
         decreases_by = calculate_percentage(percentage=item_to_use.decreases[attribute], total=attribute)
+        if attribute == "Player.current_enemy.weapon.accuracy" or attribute == "Player.current_enemy.weapon.crit_chance":
+          decreases_by = round(decreases_by)
           
         attribute += decreases_by
       

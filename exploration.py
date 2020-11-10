@@ -91,6 +91,8 @@ What Would You Like To Do?
 {Player.armour.weight}
 {Player.armour.defense}
 {Player.weapon.accuracy}
+
+{Player.local_variables}
 > """).lower().strip()
 
         cls.is_players_turn = False
