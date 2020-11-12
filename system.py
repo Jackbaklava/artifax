@@ -22,6 +22,16 @@ def calculate_percentage(percentage, current=None, total=None):
   return int(res)
 
 
+def remove_unwanted_chars(string_to_clean, unwanted_chars=('.', '_'), replace_with=' '):
+  res = string_to_clean
+  
+  for char in unwanted_chars:
+    if char in string_to_clean:
+      res = res.replace(char, replace_with)
+      
+  return res
+
+
 print_one_liner = lambda string: print(string * 130)
 
 
