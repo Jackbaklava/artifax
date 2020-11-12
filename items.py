@@ -1,6 +1,6 @@
 from colours import Colours
 from objects import  Player, Weapon, Armour, all_player_weapons, all_player_armour
-from system import clear, sleep, sleep_and_clear, print_one_liner, print_heading, calculate_percentage
+from system import clear, sleep, sleep_and_clear, print_one_liner, print_heading, calculate_percentage, remove_unwanted_chars
 
 
 
@@ -29,22 +29,36 @@ class Item:
     increased_by = " "
     
     for attribute in self.increases:
-      attribute_to_add = attribute.split('.')
-      increased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
-      increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%, ')
+      increased_attributes += word('Player ', Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
+      increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%')
+      
+      if attribute != list(self.increases.keys())[-1]:
+        increased_attributes += comma
+        increased_by += comma
+      else:
+        increased_attributes += ' '
+        increased_by += ' '
         
       string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
       self.description[0] = string_to_add
+        
         
     #Decreased effects AKA description[1]
     decreased_attributes = " "
     decreased_by = " "
     
     for attribute in self.decreases:
-      decreased_attributes += word(attribute_strings[attribute], Colours.attribute_colour) + comma
-      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%, ')
+      decreased_attributes += word('Enemy ', Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
+      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%')
+      
+      if attribute != list(self.decreases.keys())[-1]:
+        decreased_attributes += comma
+        decreased_by += comma
+      else:
+        decreased_attributes += ' '
+        decreased_by += ' '
         
-      string_to_add = word('Decreased') + decreased_attributes + word('by ') + decreased_by
+      string_to_add = word('Decreased') + decreased_attributes + word('by') + decreased_by
       self.description[1] = string_to_add
            
 
@@ -121,7 +135,6 @@ def display_equipment_stats(key,  display_price=True, item_quantity=''):
     print(f"""{key_to_display}{Colours.fg.red}{item_quantity}{specific_equipment.name_string}
 {space_to_display}{description_to_display[0]}
 {space_to_display}{description_to_display[1]}
-{space_to_display}{description_to_display[2]}
 {price_string}
 """)
 
