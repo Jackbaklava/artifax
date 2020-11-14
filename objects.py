@@ -17,7 +17,7 @@ class Weapon:
     self.can_drop = can_drop
     
     self.category = 'weapon'
-    self.local_variables = locals()
+    self.local_attributes = locals()
 
     self.str_damage = f"{damage[0]} - {damage[1]} "
     
@@ -33,10 +33,10 @@ mortemir = Weapon("Mortemir", (12, 30), 15)
 doomsblade = Weapon("Doomsblade", (10, 45), 20)
 
 #Player weapons
-copper_katana = Weapon("Copper Katana", (3, 19), 8, 20, 0)
-iron_sword = Weapon("Iron Sword", (7, 25), 13, 13, 75)
-great_axe = Weapon("Great Axe", (15, 30), 9, 8, 150)
-anduril = Weapon("Andúril", (10, 30), 15, 5, 150)
+copper_katana = Weapon("Copper Katana", (3, 19), 8, crit_chance=20)
+iron_sword = Weapon("Iron Sword", (7, 25), 13, crit_chance=13, price=75)
+great_axe = Weapon("Great Axe", (15, 30), 9, crit_chance=8, price=150)
+anduril = Weapon("Andúril", (10, 30), 15, crit_chance=5, price=150)
 
 all_player_weapons = { "insd" : iron_sword,
                        "gtae" : great_axe,
@@ -54,7 +54,7 @@ class Armour:
     self.can_drop = can_drop
     
     self.category = 'armour'
-    self.local_variables = locals()
+    self.local_attributes = locals()
 
     self.str_defense =  f"{int(100 - self.defense * 100)}%"
 
@@ -99,7 +99,7 @@ class TemporaryEnemy:
   armour = darkmail
   weapon = rusty_sword
 
-  local_variables = locals()
+  local_attributes = locals()
 
 
 
@@ -125,7 +125,7 @@ class Player:
                            "Dragon's Amulet" : 0
   }
   
-  local_variables = locals()
+  local_attributes = locals()
 
 
   @classmethod

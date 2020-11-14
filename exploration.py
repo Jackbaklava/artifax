@@ -88,11 +88,8 @@ What Would You Like To Do?
 {Colours.tag('a') + description_colour} Attack {Player.current_enemy.name_string}
 {Colours.tag('u') + description_colour} Use Item
 {Colours.tag('e') + description_colour} Escape From Combat{Colours.fg.orange}
-{Player.armour.weight}
-{Player.armour.defense}
-{Player.weapon.accuracy}
 
-{Player.local_variables}
+
 > """).lower().strip()
 
         cls.is_players_turn = False

@@ -275,10 +275,9 @@ class PlayerInventory:
 
 """)
       cls.display_items_dict(clear_the_screen=False)
-
       player_choice = input(f"{Colours.input_colour}> ").lower().strip()
 
-    if player_choice != 'back':
+    if player_choice != 'back' and cls.items_dict[player_choice] != [None, 0]:
       item_to_use = cls.items_dict[player_choice][0]
       cls.remove_item(player_choice)
 
@@ -286,27 +285,34 @@ class PlayerInventory:
       
       #Increasing effects
       for attribute in item_to_use.increases:
-        increases_by = calculate_percentage(percentage=item_to_use.increases[attribute], total=attribute)
-        if attribute in numbers_to_round:
-          increases_by = round(increases_by)
-        
-        if attribute is Player.current_health:
+        if attribute == "current_health":
           Player.heal(item_to_use.increases[attribute])
-          
+
         else:
           object_chain = attribute.split('.')
+          total = Player.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
+
+          increases_by = calculate_percentage(percentage=item_to_use.increases[attribute], total=total)
+
+          if attribute in numbers_to_round:
+            increases_by = round(increases_by)
+
           Player.local_attributes[object_chain[0]].local_attributes[object_chain[1]] -= increases_by
+
       
       #Decreasing effects
       for attribute in item_to_use.decreases:
-        decreases_by = calculate_percentage(percentage=item_to_use.decreases[attribute], total=attribute)
+        object_chain = attribute.split('.')
+        total = Player.current_enemy.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
+
+        decreases_by = calculate_percentage(percentage=item_to_use.decreases[attribute], total=total)
+
         if attribute in numbers_to_round:
           decreases_by = round(decreases_by)
           
-        object_chain = attribute.split('.')
-        Player.current_enemy.local_attributes[object_chain[0]].local_attributes[object_chain[1]] += increases_by
+        Player.current_enemy.local_attributes[object_chain[0]].local_attributes[object_chain[1]] += decreases_by
       
-      #Incrementing affected_terms by item
+      #Incrementing turns
       Player.current_item_effects[item_to_use.name] = item_to_use.affected_turns
       
       clear()
@@ -314,7 +320,7 @@ class PlayerInventory:
       sleep_and_clear(2)
 
 
-    return player_choice in cls.items_dict
+    return player_choice in cls.items_dict and cls.items_dict[player_choice] != [None, 0]
 
 
 
