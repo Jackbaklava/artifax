@@ -19,7 +19,7 @@ def calculate_percentage(percentage, current=None, total=None):
   else:
     res = current * 100 / percentage
     
-  return int(res)
+  return res
 
 
 def remove_unwanted_chars(string_to_clean, unwanted_chars=('.', '_'), replace_with=' '):
