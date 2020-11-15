@@ -20,9 +20,8 @@ class Item:
     #Creating the item's description
     word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
     comma = word(', ')
-    none_string = f"{Colours.fg.cyan}- - - - - - - -"
     
-    self.description = [none_string, none_string]
+    self.description = [Colours.none_string, Colours.none_string]
     
     #Increased effects AKA description[0]
     increased_attributes = " "
@@ -173,7 +172,7 @@ class PlayerInventory:
 
     for key in cls.items_dict:
       if cls.items_dict[key] == [None, 0]:
-        print(f"{Colours.tag(key)} {Colours.fg.cyan} - - - - - - - -")
+        print(f"{Colours.tag(key)} {Colours.none_string}")
         print('\n')
       else:
         display_equipment_stats(key, display_price=False, item_quantity=cls.items_dict[key][1])
