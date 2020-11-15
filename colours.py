@@ -2,6 +2,8 @@ class Colours:
   reset='\033[0m'
   underline='\033[04m' 
   bold = '\033[1m'
+  invisible = '\033[0m'
+  
 
   class fg: 
     red  ='\033[31m'
@@ -32,5 +34,8 @@ class Colours:
   enemy_colour = fg.red + bold
   tag_colour = fg.green + underline
   
-
+  
+  invisible_line = f"{invisible}{fg.orange}"
   tag = lambda string: f"{Colours.tag_colour}[{string}]{Colours.reset}"
+  none_string = f"{fg.cyan}- - - - - - - -"
+  

@@ -1,5 +1,5 @@
 from colours import Colours
-from items import PlayerInventory
+from items import PlayerInventory, all_items
 from objects import Player, all_enemies
 from setting import all_locations, all_artifacts
 from system import clear, sleep, sleep_and_clear
@@ -48,6 +48,27 @@ class Combat:
   @staticmethod
   def reset_effects():
     Player.current_enemy.current_health = Player.current_enemy.max_health
+    
+  
+  @staticmethod
+  def display_current_item_effects():
+    print(f"{Colours.fg.orange + Colours.underline}Current Item Effects:{Colours.reset}")
+    
+    filtered_items = list(filter(lambda item: Player.current_item_effects[item] > 0, Player.current_item_effects))
+    
+    for filtered_item in filtered_items:
+      turns_left = Player.current_item_effects[filtered_item]
+      print(f"{item.name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
+      
+      item_used = list(filter(lambda item: item.name == filtered_item, all_items.values()))
+      
+      for line in item_used[0].description:
+        if line != Colours.none_string:
+          print(line)
+          
+      print('\n')
+          
+    return Colours.invisible_line
 
 
   @classmethod
@@ -88,6 +109,9 @@ What Would You Like To Do?
 {Colours.tag('a') + description_colour} Attack {Player.current_enemy.name_string}
 {Colours.tag('u') + description_colour} Use Item
 {Colours.tag('e') + description_colour} Escape From Combat{Colours.fg.orange}
+
+
+{cls.display_current_item_effects()}
 
 
 > """).lower().strip()
