@@ -29,13 +29,12 @@ class Colours:
 
   input_colour = fg.orange
   equipment_colour = fg.lightblue
-  attribute_colour = fg.blue
-  updated_attribute_colour = fg.pink
+  attribute_colour = fg.yellow
   enemy_colour = fg.red + bold
   tag_colour = fg.green + underline
   
   
-  invisible_line = f"{invisible}{fg.orange}"
   tag = lambda string: f"{Colours.tag_colour}[{string}]{Colours.reset}"
   none_string = f"{fg.cyan}- - - - - - - -"
+  tab = "        "
   

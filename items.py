@@ -234,7 +234,7 @@ class PlayerInventory:
           
           cls.display_items_dict(clear_the_screen=False)
           
-          player_choice = input(f"{Colours.fg.orange}> ")
+          player_choice = input(f"{Colours.input_colour}> ")
 
           if player_choice not in cls.items_dict:
             clear()
