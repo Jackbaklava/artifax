@@ -52,23 +52,24 @@ class Combat:
   
   @staticmethod
   def display_current_item_effects():
-    print(f"{Colours.fg.orange + Colours.underline}Current Item Effects:{Colours.reset}")
-    
     filtered_items = list(filter(lambda item: Player.current_item_effects[item] > 0, Player.current_item_effects))
     
-    for filtered_item in filtered_items:
-      turns_left = Player.current_item_effects[filtered_item]
-      print(f"{item.name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
-      
+    if len(filtered_items) > 0:
+      print(f"{Colours.fg.lightgreen + Colours.underline}Current Item Effects:{Colours.reset}")
+    
+    for index, filtered_item in enumerate(filtered_items):
       item_used = list(filter(lambda item: item.name == filtered_item, all_items.values()))
+      turns_left = Player.current_item_effects[filtered_item]
+      
+      print(f"{Colours.tab}{Colours.tag(index + 1)} {item_used[0].name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
       
       for line in item_used[0].description:
         if line != Colours.none_string:
-          print(line)
+          print(Colours.tab + line)
           
       print('\n')
-          
-    return Colours.invisible_line
+      
+    print('\n')
 
 
   @classmethod
@@ -99,7 +100,7 @@ class Combat:
 
         while player_choice not in valid_inputs:
           clear()
-          player_choice = input(f"""
+          player_choice = print(f"""
 {Player.current_enemy.name_string + Colours.fg.red}'s Health:{Colours.fg.green} {Player.current_enemy.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.current_enemy.max_health}
 
 {Colours.fg.lightgreen + Colours.underline}Your Health:{Colours.reset}{Colours.fg.green} {Player.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.max_health}
@@ -110,11 +111,10 @@ What Would You Like To Do?
 {Colours.tag('u') + description_colour} Use Item
 {Colours.tag('e') + description_colour} Escape From Combat{Colours.fg.orange}
 
-
-{cls.display_current_item_effects()}
-
-
-> """).lower().strip()
+{Player.current_item_effects}
+""")
+          cls.display_current_item_effects()
+          player_choice = input(f"{Colours.input_colour}> ").lower().strip()
 
         cls.is_players_turn = False
 
@@ -124,7 +124,7 @@ What Would You Like To Do?
 
         elif player_choice == 'u':
           wants_to_use_item = PlayerInventory.use_item()
-          cls.is_players_turn = wants_to_use_item != True
+          cls.is_players_turn = wants_to_use_item == False
 
         elif player_choice == 'e':
           Player.escape_from_combat()
