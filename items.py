@@ -1,6 +1,6 @@
 from colours import Colours
 from objects import  Player, Weapon, Armour, all_player_weapons, all_player_armour
-from system import clear, sleep, sleep_and_clear, print_one_liner, print_heading, calculate_percentage, remove_unwanted_chars
+from system import clear, sleep, sleep_and_clear, print_one_liner, print_title, calculate_percentage, remove_unwanted_chars
 
 
 
@@ -29,7 +29,7 @@ class Item:
     
     for attribute in self.increases:
       increased_attributes += word('Player ', Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
-      increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%')
+      increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
       
       if attribute != list(self.increases.keys())[-1]:
         increased_attributes += comma
@@ -48,7 +48,7 @@ class Item:
     
     for attribute in self.decreases:
       decreased_attributes += word('Enemy ', Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
-      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%')
+      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
       
       if attribute != list(self.decreases.keys())[-1]:
         decreased_attributes += comma
@@ -312,7 +312,7 @@ class PlayerInventory:
         Player.current_enemy.local_attributes[object_chain[0]].local_attributes[object_chain[1]] += decreases_by
       
       #Incrementing turns
-      Player.current_item_effects[item_to_use.name] = item_to_use.affected_turns
+      Player.items_used[item_to_use.name] = item_to_use.affected_turns
       
       clear()
       print(f"{Colours.fg.orange}You used {item_to_use.name_string}{Colours.fg.orange}.")
@@ -449,7 +449,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {Colours.fg.orange + C
 
     while player_choice != 'back':
       clear()
-      print_heading('SHOP')
+      print_title('SHOP')
 
       player_choice = input(f"""{Colours.fg.orange}What would you like to buy?
 

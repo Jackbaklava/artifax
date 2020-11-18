@@ -2,7 +2,7 @@ from colours import Colours
 import exploration
 import items
 from setting import rune_of_daylight, primal_shard, tablet_of_destiny, azures_gauntlet, all_artifacts, all_locations
-from system import sleep, clear, sleep_and_clear, print_heading, calculate_percentage
+from system import sleep, clear, sleep_and_clear, print_title, calculate_percentage
 import random as rdm
 
 
@@ -121,8 +121,8 @@ class Player:
   #Combat variables
   current_enemy = TemporaryEnemy
   has_escaped = None
-  current_item_effects = { "King's Elixir" : 0,
-                           "Dragon's Amulet" : 0
+  items_used = { "King's Elixir" : 0,
+                 "Dragon's Amulet" : 0
   }
   
   local_attributes = locals()
@@ -352,11 +352,7 @@ class Enemy:
     sleep_and_clear(1.5)
 
 
-  def is_dead(self):
-    if self.current_health <= 0:
-      return True
-    else:
-      return False
+  is_dead = lambda self: self.current_health <= 0
 
 
   def drop_gold_coins(self):
@@ -498,7 +494,7 @@ def display_user_interface():
   ask_for_choice_colour = Colours.fg.orange
 
   clear()
-  print_heading('ARTIFAX')
+  print_title('ARTIFAX')
 
   print(
 f"""{headings_colour}Your Health:{Colours.reset}{Colours.fg.green} {Player.current_health} / {Player.max_health} {Colours.reset}

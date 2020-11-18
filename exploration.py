@@ -32,10 +32,7 @@ class Combat:
 
     Player.current_enemy = all_enemies[enemy_chosen]
 
-
     clear()
-    
-
     print(f"{Colours.fg.cyan}You encountered {Player.current_enemy.name_string}{Colours.fg.cyan}.")   
     sleep_and_clear(1)
 
@@ -46,20 +43,39 @@ class Combat:
 
 
   @staticmethod
-  def reset_effects():
-    Player.current_enemy.current_health = Player.current_enemy.max_health
-    
+  def update_items_used():
+    for item in Player.items_used:
+      turns_left = Player.items_used[item]
+
+      if turns_left > 0:
+        if turns_left == 1:
+          clear()
+          print(f"{all_items[item].name}{Colours.fg.orange}'s effects ran out.")
+          sleep_and_clear(1.5)
+
+        Player.items_used[item] -= 1
+
+      else:
+        pass
+
+
+  @staticmethod
+  def reset_items_used():
+    for item in Player.items_used:
+      Player.items_used[item] = 0
+
   
   @staticmethod
-  def display_current_item_effects():
-    filtered_items = list(filter(lambda item: Player.current_item_effects[item] > 0, Player.current_item_effects))
+  def display_items_used():
+    filtered_items = list(filter(lambda item: Player.items_used[item] > 0, Player.items_used))
     
     if len(filtered_items) > 0:
       print(f"{Colours.fg.lightgreen + Colours.underline}Current Item Effects:{Colours.reset}")
     
     for index, filtered_item in enumerate(filtered_items):
+      # use line 76 for getting in items!!!!!!!!!!!! 
       item_used = list(filter(lambda item: item.name == filtered_item, all_items.values()))
-      turns_left = Player.current_item_effects[filtered_item]
+      turns_left = Player.items_used[filtered_item]
       
       print(f"{Colours.tab}{Colours.tag(index + 1)} {item_used[0].name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
       
@@ -94,13 +110,15 @@ class Combat:
     while Player.current_health > 0 and Player.current_enemy.current_health > 0:
       clear()
 
+      cls.update_items_used()
+
       if cls.is_players_turn:
         player_choice = ''
         valid_inputs = ('a', 'u', 'e')
 
         while player_choice not in valid_inputs:
           clear()
-          player_choice = print(f"""
+          print(f"""
 {Player.current_enemy.name_string + Colours.fg.red}'s Health:{Colours.fg.green} {Player.current_enemy.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.current_enemy.max_health}
 
 {Colours.fg.lightgreen + Colours.underline}Your Health:{Colours.reset}{Colours.fg.green} {Player.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.max_health}
@@ -111,9 +129,9 @@ What Would You Like To Do?
 {Colours.tag('u') + description_colour} Use Item
 {Colours.tag('e') + description_colour} Escape From Combat{Colours.fg.orange}
 
-{Player.current_item_effects}
+{Player.items_used}
 """)
-          cls.display_current_item_effects()
+          cls.display_items_used()
           player_choice = input(f"{Colours.input_colour}> ").lower().strip()
 
         cls.is_players_turn = False
@@ -142,11 +160,10 @@ What Would You Like To Do?
 
 
     Player.get_tired()
+    cls.reset_items_used()
     
     if Player.current_enemy.is_dead():
       Player.current_enemy.drop_loot()
-
-    cls.reset_effects()
 
 
 

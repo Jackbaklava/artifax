@@ -38,7 +38,7 @@ print_one_liner = lambda string: print(string * 130)
 line_break = lambda: f'{o.Player.current_location.line_colour}{"_" * 130}{Colours.reset}'
 
 
-def print_heading(title):
+def print_title(title):
   print(f"""{line_break()}{Colours.fg.orange + Colours.bold}
 
   {title.center(130) + Colours.reset}
