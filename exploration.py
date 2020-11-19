@@ -2,12 +2,13 @@ from colours import Colours
 from items import PlayerInventory, all_items
 from objects import Player, all_enemies
 from setting import all_locations, all_artifacts
-from system import clear, sleep, sleep_and_clear
+from system import clear, sleep_and_clear, indent
 import random as rdm
 
 
 
 class Combat:
+
   @staticmethod
   def choose_enemy(enemy_chosen=None):
     if enemy_chosen == None:
@@ -77,11 +78,11 @@ class Combat:
       item_used = list(filter(lambda item: item.name == filtered_item, all_items.values()))
       turns_left = Player.items_used[filtered_item]
       
-      print(f"{Colours.tab}{Colours.tag(index + 1)} {item_used[0].name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
+      print(f"{Colours.tag(index + 1)} {item_used[0].name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
       
       for line in item_used[0].description:
         if line != Colours.none_string:
-          print(Colours.tab + line)
+          print(indent(index) + line)
           
       print('\n')
       
@@ -89,9 +90,26 @@ class Combat:
 
 
   @classmethod
-  def start(cls, enemy=None, is_players_turn=None):
-    description_colour = Colours.fg.lightblue
+  def display_user_interface(cls):
+    clear()
+    print(f"""
+{Player.current_enemy.name_string + Colours.fg.red}'s Health:{Colours.fg.green} {Player.current_enemy.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.current_enemy.max_health}
 
+{Colours.fg.lightgreen + Colours.underline}Your Health:{Colours.reset}{Colours.fg.green} {Player.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.max_health}
+
+{Colours.fg.orange}
+What Would You Like To Do?
+{Colours.tag('a') + Colours.description_colour} Attack {Player.current_enemy.name_string}
+{Colours.tag('u') + Colours.description_colour} Use Item
+{Colours.tag('e') + Colours.description_colour} Escape From Combat{Colours.fg.orange}
+
+{Player.items_used}
+""")
+    cls.display_items_used()
+
+
+  @classmethod
+  def start(cls, enemy=None, is_players_turn=None):
     #Choose enemy
     if enemy == None:
       cls.choose_enemy()
@@ -109,7 +127,6 @@ class Combat:
 
     while Player.current_health > 0 and Player.current_enemy.current_health > 0:
       clear()
-
       cls.update_items_used()
 
       if cls.is_players_turn:
@@ -117,21 +134,8 @@ class Combat:
         valid_inputs = ('a', 'u', 'e')
 
         while player_choice not in valid_inputs:
-          clear()
-          print(f"""
-{Player.current_enemy.name_string + Colours.fg.red}'s Health:{Colours.fg.green} {Player.current_enemy.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.current_enemy.max_health}
+          cls.display_user_interface()
 
-{Colours.fg.lightgreen + Colours.underline}Your Health:{Colours.reset}{Colours.fg.green} {Player.current_health}{Colours.fg.red} / {Colours.fg.green}{Player.max_health}
-
-{Colours.fg.orange}
-What Would You Like To Do?
-{Colours.tag('a') + description_colour} Attack {Player.current_enemy.name_string}
-{Colours.tag('u') + description_colour} Use Item
-{Colours.tag('e') + description_colour} Escape From Combat{Colours.fg.orange}
-
-{Player.items_used}
-""")
-          cls.display_items_used()
           player_choice = input(f"{Colours.input_colour}> ").lower().strip()
 
         cls.is_players_turn = False

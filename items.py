@@ -1,6 +1,6 @@
 from colours import Colours
 from objects import  Player, Weapon, Armour, all_player_weapons, all_player_armour
-from system import clear, sleep, sleep_and_clear, print_one_liner, print_title, calculate_percentage, remove_unwanted_chars
+from system import clear, sleep, sleep_and_clear, print_one_liner, print_title, indent, calculate_percentage, remove_unwanted_chars
 
 
 
@@ -81,7 +81,7 @@ all_items = { "vlohg" : vial_of_healing,
 def display_equipment_stats(key,  display_price=True, item_quantity=''):
   if key in all_player_weapons or key in all_player_armour or key in all_items or key in PlayerInventory.items_dict:
     key_to_display = Colours.tag(key) + ' '
-    space_to_display = ' ' * len(list(key)) + '   '
+    space_to_display = indent(key)
 
   else:
     key_to_display = ''
@@ -324,6 +324,7 @@ class PlayerInventory:
 
 
 class Shop:
+
   @staticmethod
   def display_initial_message(category):
     clear()
@@ -363,7 +364,7 @@ Colours.underline}{cls.equipment_to_purchase.name}s{Colours.reset + Colours.fg.b
 
     clear()
     print(f"""{Colours.fg.blue}Are you sure you want to buy {Colours.fg.red + 
-Colours.underline}{cls.equipment_quantity}{Colours.reset} {Colours.fg.orange + Colours.underline}{cls.equipment_to_purchase.name}{Colours.reset + Colours.fg.blue} for {Colours.fg.yellow + Colours.underline}{cls.total_price} gold coins{Colours.reset + Colours.fg.blue}?
+Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purchase.name_string}{Colours.fg.blue} for {Colours.fg.yellow + Colours.underline}{cls.total_price} gold coins{Colours.reset + Colours.fg.blue}?
 
 {Colours.fg.cyan}(Type the {Colours.fg.green}green letters {Colours.fg.cyan}in square brackets to {Colours.fg.green}confirm your purchase{Colours.fg.cyan})
 {Colours.fg.cyan}(Type '{Colours.fg.red}back{Colours.fg.cyan}' to go back)
