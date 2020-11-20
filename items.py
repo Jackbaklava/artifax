@@ -21,7 +21,7 @@ class Item:
     word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
     comma = word(', ')
     
-    self.description = [Colours.none_string, Colours.none_string]
+    self.description = []
     
     #Increased effects AKA description[0]
     increased_attributes = " "
@@ -39,7 +39,7 @@ class Item:
         increased_by += ' '
         
       string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
-      self.description[0] = string_to_add
+      self.description.append(string_to_add)
         
         
     #Decreased effects AKA description[1]
@@ -58,7 +58,7 @@ class Item:
         decreased_by += ' '
         
       string_to_add = word('Decreased') + decreased_attributes + word('by') + decreased_by
-      self.description[1] = string_to_add
+      self.description.append(string_to_add)
            
 
 
@@ -78,7 +78,7 @@ all_items = { "vlohg" : vial_of_healing,
 }
 
 
-def display_equipment_stats(key,  display_price=True, item_quantity=''):
+def display_equipment_stats(key,  display_price=True, display_name=True, item_quantity='', extra_text=None):
   if key in all_player_weapons or key in all_player_armour or key in all_items or key in PlayerInventory.items_dict:
     key_to_display = Colours.tag(key) + ' '
     space_to_display = indent(key)
@@ -105,38 +105,44 @@ def display_equipment_stats(key,  display_price=True, item_quantity=''):
 
   if display_price:
     price_string = f"{space_to_display}{Colours.fg.yellow}Price: {specific_equipment.price}"
-
-  elif display_price == False:
+  else:
     price_string = ''
+    
+  if display_name:
+    name_to_display = specific_equipment.name_string
+  else:
+    name_to_display = ''
 
   if type(item_quantity) == int:
     item_quantity = str(item_quantity) + ' '
 
 
   if isinstance(specific_equipment, Weapon):
-    print(f"""{key_to_display}{specific_equipment.name_string}
+    print(f"""{key_to_display}{name_to_display}
 {space_to_display}{Colours.fg.red}Damage: {specific_equipment.str_damage}
 {space_to_display}{Colours.fg.orange}Crit Chance: {specific_equipment.str_crit_chance}
 {space_to_display}{Colours.fg.cyan}Accuracy: {specific_equipment.str_accuracy}
-{price_string}
-""")
+{price_string}""")
 
   elif isinstance(specific_equipment, Armour):
-    print(f"""{key_to_display}{specific_equipment.name_string}
+    print(f"""{key_to_display}{name_to_display}
 {space_to_display}{Colours.fg.red}Defense: {specific_equipment.str_defense}
 {space_to_display}{Colours.fg.cyan}Weight: {specific_equipment.weight}
-{price_string}
-""")
+{price_string}""")
     
   elif isinstance(specific_equipment, Item):
-    description_to_display = specific_equipment.description
+    if display_name:
+      print(f"{key_to_display}{name_to_display}")
+    else:
+      space_to_display = indent(extra_text)
     
-    print(f"""{key_to_display}{Colours.fg.red}{item_quantity}{specific_equipment.name_string}
-{space_to_display}{description_to_display[0]}
-{space_to_display}{description_to_display[1]}
-{price_string}
-""")
-
+    for line in specific_equipment.description:
+      print(space_to_display + line)
+    
+    if price_string != '':
+      print(price_string)
+      
+  print('\n')
 
 
 def display_current_equipment_stats(category):

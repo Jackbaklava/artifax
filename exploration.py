@@ -1,5 +1,5 @@
 from colours import Colours
-from items import PlayerInventory, all_items
+from items import PlayerInventory, all_items, display_equipment_stats
 from objects import Player, all_enemies
 from setting import all_locations, all_artifacts
 from system import clear, sleep_and_clear, indent
@@ -76,15 +76,12 @@ class Combat:
     for index, filtered_item in enumerate(filtered_items):
       # use line 76 for getting in items!!!!!!!!!!!! 
       item_used = list(filter(lambda item: item.name == filtered_item, all_items.values()))
+      item_number = index + 1
       turns_left = Player.items_used[filtered_item]
       
-      print(f"{Colours.tag(index + 1)} {item_used[0].name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
+      print(f"{Colours.tag(item_number)} {item_used[0].name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
       
-      for line in item_used[0].description:
-        if line != Colours.none_string:
-          print(indent(index) + line)
-          
-      print('\n')
+      display_equipment_stats(item_used[0], display_name=False, extra_text=item_number)
       
     print('\n')
 
