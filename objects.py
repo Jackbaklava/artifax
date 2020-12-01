@@ -1,9 +1,10 @@
 from colours import Colours
 import exploration
 import items
+import operator
+import random as rdm
 from setting import rune_of_daylight, primal_shard, tablet_of_destiny, azures_gauntlet, all_artifacts, all_locations
 from system import sleep, clear, sleep_and_clear, print_title, calculate_percentage
-import random as rdm
 
 
 
@@ -95,7 +96,17 @@ all_player_armour = { "cl" : chainmail,
 
 
 
-class TemporaryEnemy:
+class Entity:
+
+  @staticmethod
+  def get_attribute(self, attribute):
+    object_chain = attribute.split(".")
+
+    return self.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
+
+
+
+class TemporaryEnemy(Entity):
   armour = darkmail
   weapon = rusty_sword
 
@@ -103,7 +114,7 @@ class TemporaryEnemy:
 
 
 
-class Player:
+class Player(Entity):
   current_health = 100
   max_health = 100
   armour = leather_tunic
@@ -126,6 +137,36 @@ class Player:
   }
   
   local_attributes = locals()
+
+
+  @classmethod
+  def update_attributes(cls, mode, attributes_to_update):
+    #Opposite operators because defense and crit chance are better when subtracted (inverse)
+    operators_dict = { "Increase" : (operator.sub, Player), 
+                       "Decrease" : (operator.add, Player.current_enemy)
+    }
+
+    operate = operators_dict[mode][0]
+    inverse_operate = list(filter(lambda value: not value is operate, operators_dict.values()))[0]
+
+    for attribute in attributes_to_update:
+      percentage_to_update = attributes_to_update[attribute]
+
+      if attribute == "current_health":
+        Player.heal(percentage_to_update)
+
+      else:
+        total = operators_dict[mode][1].get_attribute(attribute)
+
+        update_by = calculate_percentage(percentage=percentage_to_update, total=total)
+
+        if attribute in numbers_to_round:
+          increases_by = round(increases_by)
+ 
+        #implement the operators
+        #maybe even move this func to Entity
+        #:)
+        Player.local_attributes[object_chain[0]].local_attributes[object_chain[1]] -= increases_by
 
 
   @classmethod
@@ -314,7 +355,7 @@ class Player:
       
 
 
-class Enemy:
+class Enemy(Entity):
   def __init__(self, name, max_health, armour, weapon, spawn_location, spawn_range, gold_coins_drop=(1,50)):
     self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
     self.max_health = max_health
