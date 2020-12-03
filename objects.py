@@ -99,10 +99,29 @@ all_player_armour = { "cl" : chainmail,
 class Entity:
 
   @staticmethod
-  def get_attribute(self, attribute):
+  def get_attribute(self, attribute, need_value=True):
     object_chain = attribute.split(".")
 
-    return self.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
+    if need_value:
+      return self.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
+    else:
+      return object_chain[-1]
+
+
+  @staticmethod
+  def update_attribute(self, attribute, operate, percentage):
+    if attribute == "current_health":
+      Player.heal(percentage)
+
+    else:
+      total = self.get_attribute(attribute)
+      update_by = calculate_percentage(percentage=percentage, total=total)
+
+      numbers_to_round = ("weapon.accuracy", "weapon.crit_chance")
+      if attribute in numbers_to_round:
+        update_by = round(update_by)
+ 
+      Player.local_attributes[attribute[0]].local_attributes[attribute[1]] = operate(self.get_attribute(attribute), update_by)
 
 
 
@@ -140,33 +159,23 @@ class Player(Entity):
 
 
   @classmethod
-  def update_attributes(cls, mode, attributes_to_update):
+  def apply_effects(cls, mode, attributes_to_update):
     #Opposite operators because defense and crit chance are better when subtracted (inverse)
     operators_dict = { "Increase" : (operator.sub, Player), 
                        "Decrease" : (operator.add, Player.current_enemy)
     }
-
     operate = operators_dict[mode][0]
+
+    inverse_attributes = ("accuracy")
     inverse_operate = list(filter(lambda value: not value is operate, operators_dict.values()))[0]
 
     for attribute in attributes_to_update:
-      percentage_to_update = attributes_to_update[attribute]
+      equipment_attribute = cls.get_attribute(attribute, need_value=False)
 
-      if attribute == "current_health":
-        Player.heal(percentage_to_update)
+      if equipment_attribute in inverse_attributes:
+        operate = inverse_operate
 
-      else:
-        total = operators_dict[mode][1].get_attribute(attribute)
-
-        update_by = calculate_percentage(percentage=percentage_to_update, total=total)
-
-        if attribute in numbers_to_round:
-          increases_by = round(increases_by)
- 
-        #implement the operators
-        #maybe even move this func to Entity
-        #:)
-        Player.local_attributes[object_chain[0]].local_attributes[object_chain[1]] -= increases_by
+      operators_dict[mode][1].update_attribute(attribute, operate, attributes_to_update[attribute])
 
 
   @classmethod
