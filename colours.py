@@ -28,6 +28,7 @@ class Colours:
     black ='\033[40m'
 
   input_colour = fg.orange
+  description_colour = fg.lightblue
   equipment_colour = fg.lightblue
   attribute_colour = fg.yellow
   enemy_colour = fg.red + bold
@@ -36,5 +37,4 @@ class Colours:
   
   tag = lambda string: f"{Colours.tag_colour}[{string}]{Colours.reset}"
   none_string = f"{fg.cyan}- - - - - - - -"
-  tab = "        "
   

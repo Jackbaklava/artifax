@@ -15,17 +15,14 @@ valley_of_dawn = Location("Valley of Dawn", Colours.fg.cyan, Colours.fg.green + 
 
 forest_of_fangarr = Location("Forest of Fangarr", Colours.fg.blue, Colours.fg.blue + Colours.bg.green)
 
-wompy_willows = Location("Wompy Willows", forest_of_fangarr.colour, Colours.fg.blue + Colours.bg.green)
-
 iron_mountains = Location("Iron Mountains", Colours.fg.yellow, Colours.fg.yellow + Colours.bg.red)
 
 grimsden = Location("Grimsden", Colours.fg.red, Colours.fg.red + Colours.bg.purple)
 
-all_locations = {"vod" : valley_of_dawn,
-                 "fof" : forest_of_fangarr,
-                 "ww" : wompy_willows,
-                 "im" : iron_mountains,
-                 "gd" : grimsden
+all_locations = { "vod" : valley_of_dawn,
+                  "fof" : forest_of_fangarr,
+                  "im" : iron_mountains,
+                  "gd" : grimsden
 }
 
 
@@ -43,10 +40,9 @@ class Artifact:
 
 rune_of_daylight = Artifact("Rune of Daylight", valley_of_dawn)
 primal_shard = Artifact("Primal Shard", forest_of_fangarr)
-tablet_of_destiny = Artifact("Tablet of Destiny", wompy_willows)
 azures_gauntlet = Artifact("Azure's Gauntlet", iron_mountains)
 
-all_artifacts = [rune_of_daylight, primal_shard, tablet_of_destiny, azures_gauntlet]
+all_artifacts = [rune_of_daylight, primal_shard, azures_gauntlet]
 
 
 
@@ -128,7 +124,7 @@ class Storyline:
 
     you.speak("And how do I travel to Grimsden?")
 
-    old_man.speak("Since Grimsden is located in the far corner of the universe, you can't travel there by foot. So, you first need to collect the 3 Artifacts of Power and make a portal to Grimsden. You can collect these artifacts by defeating the Artifact Keeper of every location you explore.")
+    old_man.speak(f"Since Grimsden is located in the far corner of the universe, you can't travel there by foot. So, you first need to collect the {len(all_artifacts)} Artifacts of Power and make a portal to Grimsden. You can collect these artifacts by defeating the Artifact Keeper of every location you explore.")
 
     you.speak("Woah! That's alot of stuff to do.")
 
