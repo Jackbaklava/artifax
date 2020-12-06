@@ -3,7 +3,7 @@ import exploration
 import items
 import operator
 import random as rdm
-from setting import rune_of_daylight, primal_shard, tablet_of_destiny, azures_gauntlet, all_artifacts, all_locations
+from setting import all_artifacts, all_locations
 from system import sleep, clear, sleep_and_clear, print_title, calculate_percentage
 
 
@@ -98,7 +98,6 @@ all_player_armour = { "cl" : chainmail,
 
 class Entity:
 
-  @staticmethod
   def get_attribute(self, attribute, need_value=True):
     object_chain = attribute.split(".")
 
@@ -108,10 +107,9 @@ class Entity:
       return object_chain[-1]
 
 
-  @staticmethod
   def update_attribute(self, attribute, operate, percentage):
     if attribute == "current_health":
-      Player.heal(percentage)
+      new_player.heal(percentage)
 
     else:
       total = self.get_attribute(attribute)
@@ -121,7 +119,7 @@ class Entity:
       if attribute in numbers_to_round:
         update_by = round(update_by)
  
-      Player.local_attributes[attribute[0]].local_attributes[attribute[1]] = operate(self.get_attribute(attribute), update_by)
+      self.local_attributes[attribute[0]].local_attributes[attribute[1]] = operate(self.get_attribute(attribute), update_by)
 
 
 
@@ -134,35 +132,36 @@ class TemporaryEnemy(Entity):
 
 
 class Player(Entity):
-  current_health = 100
-  max_health = 100
-  armour = leather_tunic
-  weapon = anduril
-  current_location = all_locations["vod"]
-  gold_coins = 50
+  #I didn't put all the attributes as parameters because it looks ugly, and because any instances created from this object will always have these default arguments
+  def __init__(self):
+    self.current_health = 100
+    self.max_health = 100
+    self.armour = leather_tunic
+    self.weapon = anduril
+    self.current_location = all_locations["vod"]
+    self.gold_coins = 50
 
-  artifacts_collected = []
-  artifacts_not_collected = [rune_of_daylight, primal_shard, tablet_of_destiny, azures_gauntlet]
-  number_of_artifacts_collected = len(artifacts_collected)
-  total_artifacts = 3
+    self.artifacts_collected = []
+    self.artifacts_not_collected = list(all_artifacts)
+    self.num_of_artifacts_collected = len(self.artifacts_collected)
+    self.total_artifacts = len(all_artifacts)
 
-  is_tired = [False, False, False]
+    self.is_tired = [False, False, False]
   
-  #Combat variables
-  current_enemy = TemporaryEnemy
-  has_escaped = None
-  items_used = { "King's Elixir" : 0,
-                 "Dragon's Amulet" : 0
-  }
+    #Combat variables
+    self.current_enemy = TemporaryEnemy
+    self.has_escaped = None
+    self.items_used = { "King's Elixir" : 0,
+                        "Dragon's Amulet" : 0
+    }
   
-  local_attributes = locals()
+    self.local_attributes = locals()
 
 
-  @classmethod
-  def apply_effects(cls, mode, attributes_to_update):
+  def apply_effects(self, mode, attributes_to_update):
     #Opposite operators because defense and crit chance are better when subtracted (inverse)
-    operators_dict = { "Increase" : (operator.sub, Player), 
-                       "Decrease" : (operator.add, Player.current_enemy)
+    operators_dict = { "Increase" : (operator.sub, self), 
+                       "Decrease" : (operator.add, self.current_enemy)
     }
     operate = operators_dict[mode][0]
 
@@ -170,7 +169,7 @@ class Player(Entity):
     inverse_operate = list(filter(lambda value: not value is operate, operators_dict.values()))[0]
 
     for attribute in attributes_to_update:
-      equipment_attribute = cls.get_attribute(attribute, need_value=False)
+      equipment_attribute = self.get_attribute(attribute, need_value=False)
 
       if equipment_attribute in inverse_attributes:
         operate = inverse_operate
@@ -178,8 +177,7 @@ class Player(Entity):
       operators_dict[mode][1].update_attribute(attribute, operate, attributes_to_update[attribute])
 
 
-  @classmethod
-  def travel(cls):
+  def travel(self):
     player_choice = ''
     locations_copy = all_locations.copy()
     del locations_copy['gd']
@@ -191,7 +189,7 @@ class Player(Entity):
       for key in locations_copy:
         location = all_locations[key]
 
-        if location != Player.current_location:
+        if location != self.current_location:
           print(f"{Colours.fg.green + Colours.underline}[{key}]{Colours.reset}{location.colour} {location.name}")
 
       print('\n' + f"{Colours.fg.green + Colours.underline}[back]{Colours.reset + Colours.fg.yellow} Go Back" + '\n')
@@ -199,55 +197,52 @@ class Player(Entity):
 
 
     if player_choice in all_locations:
-      cls.current_location = all_locations[player_choice]
+      self.current_location = all_locations[player_choice]
 
       clear()
-      print(f"{Colours.fg.orange}You travelled to {Player.current_location.colour + Colours.underline + Colours.bold}{Player.current_location.name}{Colours.reset + Colours.fg.orange}.")
+      print(f"{Colours.fg.orange}You travelled to {self.current_location.colour + Colours.underline + Colours.bold}{self.current_location.name}{Colours.reset + Colours.fg.orange}.")
 
       sleep_and_clear(2)
 
 
-  @classmethod
-  def open_artipedia(cls):
+  def open_artipedia(self):
     clear()
-    
     print(f"{Colours.fg.orange + Colours.bold}Artifacts Collected:{Colours.reset}")
-    for artifact in cls.artifacts_collected:
+    
+    for artifact in self.artifacts_collected:
       artifact.display_artifact()
-    print('\n')
 
+    print('\n')
     print(f"{Colours.fg.orange + Colours.bold}Artifacts Not Collected:{Colours.reset}")
-    for artifact in cls.artifacts_not_collected:
+    
+    for artifact in self.artifacts_not_collected:
       artifact.display_artifact()
+      
     print('\n')
-
     input(f"{Colours.fg.orange}> ")
     
 
-  @classmethod
-  def heal(cls, percentage_to_heal):
-    value_to_heal = calculate_percentage(percentage_to_heal, total=cls.max_health)
+  def heal(self, percentage_to_heal):
+    value_to_heal = calculate_percentage(percentage_to_heal, total=self.max_health)
     
-    cls.current_health += value_to_heal
+    self.current_health += value_to_heal
     
-    if cls.current_health > cls.max_health:
-      cls.current_health = cls.max_health
+    if self.current_health > self.max_health:
+      self.current_health = self.max_health
       
     clear()
     print(f"{Colours.fg.cyan}You regained {Colours.fg.red + Colours.underline}{percentage_to_heal}%{Colours.reset + Colours.fg.cyan} of your {Colours.fg.green}health{Colours.fg.cyan}.")
     sleep_and_clear(2)
 
 
-  @classmethod
-  def get_tired(cls):
-    for index, value in enumerate(cls.is_tired):
+  def get_tired(self):
+    for index, value in enumerate(self.is_tired):
       if value == False:
-        cls.is_tired[index] = True
+        self.is_tired[index] = True
         break
 
 
-  @classmethod
-  def sleep_for_health(cls):
+  def sleep_for_health(self):
     player_choice = ""
     valid_inputs = ('short', 'long', 'back')
     not_tired_string = f"{Colours.fg.red + Colours.underline}You Try To Sleep, But Feel Well Rested. Get Tired By Defeating Enemies In The Wilderness."
@@ -267,11 +262,11 @@ class Player(Entity):
       clear()
 
       if player_choice == 'short':
-        if cls.is_tired[0] and cls.is_tired[1]:
-          cls.is_tired[0] = False
-          cls.is_tired[1] = False
+        if self.is_tired[0] and self.is_tired[1]:
+          self.is_tired[0] = False
+          self.is_tired[1] = False
           
-          cls.heal(50)
+          self.heal(50)
 
         else:
           print(not_tired_string)
@@ -279,10 +274,10 @@ class Player(Entity):
 
 
       elif player_choice == 'long':
-        if False not in cls.is_tired:
-          cls.is_tired = [False, False, False]
+        if False not in self.is_tired:
+          self.is_tired = [False, False, False]
           
-          cls.heal(100)
+          self.heal(100)
 
           rdm_int = rdm.randint(1,5)
           if rdm_int == 5:
@@ -293,61 +288,61 @@ class Player(Entity):
           sleep_and_clear(3)
 
 
-  @classmethod
-  def equip(cls, equipment_to_equip):
+  def equip(self, equipment_to_equip):
     if equipment_to_equip.category == 'weapon':
-      cls.weapon = equipment_to_equip
+      self.weapon = equipment_to_equip
 
     elif equipment_to_equip.category == 'armour':
-      cls.armour = equipment_to_equip
+      self.armour = equipment_to_equip
 
     clear()
     print(f"{Colours.fg.orange}You equipped {equipment_to_equip.name_string}{Colours.fg.orange}.")
     sleep_and_clear(1)
 
 
-  @classmethod
-  def attack(cls):
+  def attack(self):
     clear()
-    rdm_int = rdm.randint(1, cls.weapon.accuracy)
+    rdm_int = rdm.randint(1, self.weapon.accuracy)
 
     if rdm_int == 1:
       rdm_int = rdm.randint(1,2)
       if rdm_int == 1:
-        print(f"{Player.current_enemy.name_string}{Colours.fg.cyan} dodged your attack.")
+        print(f"{self.current_enemy.name_string}{Colours.fg.cyan} dodged your attack.")
       else:
         print(f"{Colours.fg.lightblue}You missed your attack.")
       sleep_and_clear(1.5)
 
     else:
-      player_attack_damage = cls.weapon.damage
-      damage_taken = round(rdm.randint(player_attack_damage[0], player_attack_damage[1]) * cls.current_enemy.armour.defense)
+      player_attack_damage = self.weapon.damage
+      damage_taken = round(rdm.randint(player_attack_damage[0], player_attack_damage[1]) * self.current_enemy.armour.defense)
 
-      rdm_int = rdm.randint(1, cls.weapon.crit_chance)
+      rdm_int = rdm.randint(1, self.weapon.crit_chance)
 
       if rdm_int == 1:
         print(f"{Colours.fg.orange + Colours.bold + Colours.underline}It's a critical hit!!!{Colours.reset}")
         damage_taken = damage_taken * 2
         sleep_and_clear(1)
-
   
-      cls.current_enemy.current_health -= damage_taken
-      print(f"{Colours.fg.cyan}You attacked {cls.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_taken} damage{Colours.fg.cyan}.")
+  
+      self.current_enemy.current_health -= damage_taken
+      
+      print(f"{Colours.fg.cyan}You attacked {self.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_taken} damage{Colours.fg.cyan}.")
       sleep_and_clear(1.5)
 
 
   @classmethod
-  def escape_from_combat(cls):
-    cls.has_escaped = Player.armour.is_lighter_than(Player.current_enemy.armour)
+  def escape_from_combat(self):
+    print(self)
+    self.has_escaped = self.armour.is_lighter_than(self.current_enemy.armour)
 
     clear()
-    if cls.has_escaped:
-      print(f"{Colours.fg.cyan}You successfully escaped from {Player.current_enemy.name_string}{Colours.fg.cyan}.")   
+    if self.has_escaped:
+      print(f"{Colours.fg.cyan}You successfully escaped from {self.current_enemy.name_string}{Colours.fg.cyan}.")   
 
     else:
-      print(f"""{Colours.fg.cyan}You tried to escape from {Player.current_enemy.name_string}{Colours.fg.cyan}, but failed.
+      print(f"""{Colours.fg.cyan}You tried to escape from {self.current_enemy.name_string}{Colours.fg.cyan}, but failed.
 
-{Player.current_enemy.name_string} {Colours.fg.cyan} gets another turn.
+{self.current_enemy.name_string} {Colours.fg.cyan} gets another turn.
 """)
     sleep_and_clear(2)
 
@@ -357,11 +352,14 @@ class Player(Entity):
     pass
 
 
-  @classmethod
-  def check_for_death(cls):
-    if cls.current_health <= 0:
+  def check_for_death(self):
+    if self.current_health <= 0:
       print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
       
+
+
+new_player = Player()
+
 
 
 class Enemy(Entity):
@@ -393,9 +391,9 @@ class Enemy(Entity):
     #Enemy hit its attack
     else:
       enemy_attack_damage = self.weapon.damage
-      damage_taken = round(rdm.randint(enemy_attack_damage[0], enemy_attack_damage[1]) * Player.armour.defense)
+      damage_taken = round(rdm.randint(enemy_attack_damage[0], enemy_attack_damage[1]) * new_player.armour.defense)
 
-      Player.current_health -= damage_taken
+      new_player.current_health -= damage_taken
 
       print(f"{self.name_string + Colours.fg.cyan} attacked you, and dealt{Colours.fg.orange} {damage_taken} damage{Colours.fg.cyan}.")
 
@@ -407,7 +405,7 @@ class Enemy(Entity):
 
   def drop_gold_coins(self):
     gold_coins_dropped = rdm.randint(self.gold_coins_drop[0], self.gold_coins_drop[1])
-    Player.gold_coins += gold_coins_dropped
+    new_player.gold_coins += gold_coins_dropped
     
     print(f"{Colours.fg.lightblue}You recieved {Colours.fg.yellow}{gold_coins_dropped} gold coins{Colours.fg.lightblue}.")
   
@@ -437,7 +435,7 @@ class Enemy(Entity):
       player_choice = input(f"{Colours.input_colour}> ")
 
     if player_choice == 'y':
-      Player.equip(equipment_to_drop)
+      new_player.equip(equipment_to_drop)
 
     elif player_choice == 'n':
       pass
@@ -446,7 +444,7 @@ class Enemy(Entity):
     
   def drop_loot(self):
     clear()
-    print(f"{Colours.fg.green}You defeated {Player.current_enemy.name_string}{Colours.fg.green}!!!")
+    print(f"{Colours.fg.green}You defeated {new_player.current_enemy.name_string}{Colours.fg.green}!!!")
     sleep_and_clear(2)
 
     if not self is artifact_keeper:
@@ -473,11 +471,11 @@ class Enemy(Entity):
 
     #drop artifact
     else:
-      filtered_artifacts = list(filter(lambda artifact: artifact.location is Player.current_location, all_artifacts))
+      filtered_artifacts = list(filter(lambda artifact: artifact.location is new_player.current_location, all_artifacts))
       
       artifact_to_add = filtered_artifacts[0]
-      Player.artifacts_collected.append(artifact_to_add)
-      Player.artifacts_not_collected.remove(artifact_to_add)
+      new_player.artifacts_collected.append(artifact_to_add)
+      new_player.artifacts_not_collected.remove(artifact_to_add)
 
       print(f"{Colours.fg.green}You received {artifact_to_add.name_string}{Colours.fg.green}.")
 
@@ -496,14 +494,6 @@ bone_bat = Enemy("Bone Bat", 50, darkmail, rusty_sword, ["fof"], (81, 131))
 owl_bear = Enemy("Owlbear", 120, darkmail, rusty_sword, ["fof"], (161, 191))
 ashwing = Enemy("Ashwing", 50, darkmail, rusty_sword, ["fof"], (191, 201))
 
-
-#Enemies that spawn in Wompy Willows
-phantom = Enemy("Phantom", 70, darkmail, rusty_sword, ["ww"], (1,61))
-ghoul = Enemy("Ghoul", 90, darkmail, rusty_sword, ["ww"], (61, 121))
-bane_cat = Enemy("Bane Cat", 50, darkmail, rusty_sword, ["ww"], (121, 151))
-beshtrauming = Enemy("Beshtrauming", 150, darkmail, rusty_sword, ["ww"], (151, 181)) 
-flagercroc = Enemy("Flagercroc", 150, darkmail, rusty_sword, ["ww"], (191, 201))
-
 #Enemies that spawn in Iron Mountains
 highland_orc = Enemy("Highland Orc", 100, darkmail, rusty_sword, ["im"], (1, 71))
 gargoyle = Enemy("Gargoyle", 70, darkmail, rusty_sword, ["im"], (71, 121))
@@ -511,7 +501,7 @@ night_hunter = Enemy("Night Hunter", 100, darkmail, rusty_sword, ["im"], (121, 1
 kavauri = Enemy("Kavauri", 150, darkmail, rusty_sword, ["im"], (191, 201))
 
 #Artifact Keeper can spawn in any location
-artifact_keeper = Enemy("Artifact Keeper", 150, darkmail, rusty_sword, ["vod", "fof", "ww", "im"], (191, 201))
+artifact_keeper = Enemy("Artifact Keeper", 150, darkmail, rusty_sword, ["vod", "fof", "im"], (191, 201))
 
 all_enemies = { "goblin" : goblin,
                 "bandit" : bandit,
@@ -520,12 +510,6 @@ all_enemies = { "goblin" : goblin,
                 "bone_bat" : bone_bat,
                 "owl_bear" : owl_bear,
                 "ashwing" : ashwing,
-
-                "phantom" : phantom,
-                "ghoul" : ghoul,
-                "bane_cat" : bane_cat,
-                "beshtrauming" : beshtrauming,
-                "flagercroc" : flagercroc,
 
                 "highland_orc" : highland_orc,
                 "gargoyle" : gargoyle,
@@ -536,10 +520,10 @@ all_enemies = { "goblin" : goblin,
 }
 
 
+#Colour mess, need dict of valid_inputs
 def display_user_interface():
   headings_colour = Colours.fg.red + Colours.underline
   gold_colour = Colours.fg.yellow + Colours.underline
-  tags_colour = Colours.fg.green + Colours.underline
   tags_explanation_colour = Colours.reset + Colours.fg.yellow
   ask_for_choice_colour = Colours.fg.orange
 
@@ -547,26 +531,26 @@ def display_user_interface():
   print_title('ARTIFAX')
 
   print(
-f"""{headings_colour}Your Health:{Colours.reset}{Colours.fg.green} {Player.current_health} / {Player.max_health} {Colours.reset}
+f"""{headings_colour}Your Health:{Colours.reset}{Colours.fg.green} {new_player.current_health} / {new_player.max_health} {Colours.reset}
 {headings_colour}
-Your Location:{Colours.reset + Colours.fg.orange} {Player.current_location.name}{Colours.reset}
+Your Location:{Colours.reset + Colours.fg.orange} {new_player.current_location.name}{Colours.reset}
 {headings_colour}
-Your Armour:{Colours.reset} {Player.armour.name_string}{Colours.reset}
+Your Armour:{Colours.reset} {new_player.armour.name_string}{Colours.reset}
 {headings_colour}
-Your Weapon:{Colours.reset} {Player.weapon.name_string}{Colours.reset}
+Your Weapon:{Colours.reset} {new_player.weapon.name_string}{Colours.reset}
 {gold_colour}
-Gold Coins:{Colours.reset + Colours.fg.yellow} {Player.gold_coins}{Colours.reset}
+Gold Coins:{Colours.reset + Colours.fg.yellow} {new_player.gold_coins}{Colours.reset}
 {headings_colour}
-Artifacts Collected:{Colours.reset + Colours.fg.orange} {Player.number_of_artifacts_collected} / {Player.total_artifacts}
+Artifacts Collected:{Colours.reset + Colours.fg.orange} {new_player.number_of_artifacts_collected} / {new_player.total_artifacts}
 {headings_colour}
 {Colours.reset + Colours.fg.orange + Colours.underline}
-Things You Can Do:{tags_colour}
-[ex]{tags_explanation_colour} Explore The Wilderness{tags_colour}
-[sleep]{tags_explanation_colour} Sleep To Regenerate Your Health{tags_colour}
-[travel]{tags_explanation_colour} Travel To A Different Location{tags_colour}
-[inv]{tags_explanation_colour} Open Your Inventory{tags_colour}
-[shop]{tags_explanation_colour} Open The Shop{tags_colour}
-[art]{tags_explanation_colour} Open Artipedia{Colours.fg.lightblue + Colours.underline}
+Things You Can Do:
+{Colours.tag('ex')} {tags_explanation_colour}Explore The Wilderness
+{Colours.tag('slep')} {tags_explanation_colour}Sleep To Regenerate Your Health
+{Colours.tag('trv')} {tags_explanation_colour}Travel To A Different Location
+{Colours.tag('inv')} {tags_explanation_colour}Open Your Inventory
+{Colours.tag('shp')} {tags_explanation_colour}Open The Shop
+{Colours.tag('art')} {tags_explanation_colour}Open Artipedia{Colours.fg.lightblue + Colours.underline}
 
 [help]{Colours.reset + Colours.fg.red} What am I supposed to do?
 {ask_for_choice_colour + Colours.bold}

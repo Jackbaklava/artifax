@@ -35,7 +35,7 @@ def remove_unwanted_chars(string_to_clean, unwanted_chars=('.', '_'), replace_wi
 print_one_liner = lambda string: print(string * 130)
 
 
-line_break = lambda: f'{o.Player.current_location.line_colour}{"_" * 130}{Colours.reset}'
+line_break = lambda: f'{o.new_player.current_location.line_colour}{"_" * 130}{Colours.reset}'
 
 
 indent = lambda text: ' ' * len(list(str(text))) + '   ' 

@@ -13,7 +13,7 @@ Combat.start(is_players_turn=True)
 
 valid_inputs = ('ex', 'sleep', 'travel', 'inv', 'shop', 'art', 'help')
 
-while o.Player.current_health > 0 and o.Player.artifacts_collected != o.Player.total_artifacts:
+while o.new_player.current_health > 0 and o.new_player.artifacts_collected != o.new_player.total_artifacts:
   o.display_user_interface()
   player_choice = input(f"{Colours.fg.orange}> ").lower().strip()
 
@@ -21,10 +21,10 @@ while o.Player.current_health > 0 and o.Player.artifacts_collected != o.Player.t
     Combat.start()
 
   elif player_choice == 'sleep':
-    o.Player.sleep_for_health()
+    o.new_player.sleep_for_health()
 
   elif player_choice == 'travel':
-    o.Player.travel()
+    o.new_player.travel()
 
   elif player_choice == 'inv':
     PlayerInventory.display_items_dict(clear_the_screen=True)
@@ -34,10 +34,10 @@ while o.Player.current_health > 0 and o.Player.artifacts_collected != o.Player.t
     Shop.display_shop()
 
   elif player_choice == 'art':
-    o.Player.open_artipedia()
+    o.new_player.open_artipedia()
 
   elif player_choice == 'help':
-    o.Player.ask_for_help()
+    o.new_player.ask_for_help()
 
   elif player_choice not in valid_inputs:
     o.clear()
@@ -46,4 +46,4 @@ while o.Player.current_health > 0 and o.Player.artifacts_collected != o.Player.t
 
 
 
-o.Player.check_for_death()
+o.new_player.check_for_death()

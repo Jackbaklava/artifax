@@ -1,6 +1,6 @@
 from colours import Colours
-from objects import  Player, Weapon, Armour, all_player_weapons, all_player_armour
-from system import clear, sleep, sleep_and_clear, print_one_liner, print_title, indent, calculate_percentage, remove_unwanted_chars
+from objects import  new_player, Weapon, Armour, all_player_weapons, all_player_armour
+from system import clear, sleep, sleep_and_clear, print_one_liner, print_title, indent, remove_unwanted_chars
 
 
 
@@ -14,21 +14,21 @@ class Item:
     self.increases = increases
     self.decreases = decreases
 
-    self.category = 'item'
+    self.category = "item"
     
   
     #Creating the item's description
-    word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
-    comma = word(', ')
-    
     self.description = []
     
+    word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
+    comma = word(", ")
+    
     #Increased effects AKA description[0]
-    increased_attributes = " "
-    increased_by = " "
+    increased_attributes = ' '
+    increased_by = ' ' 
     
     for attribute in self.increases:
-      increased_attributes += word('Player ', Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
+      increased_attributes += word("Player ", Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
       increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
       
       if attribute != list(self.increases.keys())[-1]:
@@ -38,16 +38,17 @@ class Item:
         increased_attributes += ' '
         increased_by += ' '
         
-      string_to_add = word('Increased') + increased_attributes + word('by') + increased_by
+    if len(increased_attributes) > 1:
+      string_to_add = word("Increased") + increased_attributes + word("by") + increased_by
       self.description.append(string_to_add)
         
         
     #Decreased effects AKA description[1]
-    decreased_attributes = " "
-    decreased_by = " "
+    decreased_attributes = ' '
+    decreased_by = ' '
     
     for attribute in self.decreases:
-      decreased_attributes += word('Enemy ', Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
+      decreased_attributes += word("Enemy ", Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
       decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
       
       if attribute != list(self.decreases.keys())[-1]:
@@ -56,8 +57,9 @@ class Item:
       else:
         decreased_attributes += ' '
         decreased_by += ' '
-        
-      string_to_add = word('Decreased') + decreased_attributes + word('by') + decreased_by
+      
+    if len(decreased_attributes) > 1:
+      string_to_add = word("Decreased") + decreased_attributes + word("by") + decreased_by
       self.description.append(string_to_add)
            
 
@@ -79,6 +81,7 @@ all_items = { "vlohg" : vial_of_healing,
 
 
 def display_equipment_stats(key,  display_price=True, display_name=True, item_quantity='', extra_text=None):
+  #jUST MAKE A COLLECTION!!!
   if key in all_player_weapons or key in all_player_armour or key in all_items or key in PlayerInventory.items_dict:
     key_to_display = Colours.tag(key) + ' '
     space_to_display = indent(key)
@@ -149,11 +152,11 @@ def display_current_equipment_stats(category):
   print_one_liner(f"{Colours.fg.blue}-")
   print(f"{Colours.fg.green + Colours.underline}Your {category.capitalize()}:{Colours.reset}")
 
-  if category == 'weapon':
-    display_equipment_stats(Player.weapon, display_price=False)
+  if category == "weapon":
+    display_equipment_stats(new_player.weapon, display_price=False)
       
-  elif category == 'armour':
-    display_equipment_stats(Player.armour, display_price=False)
+  elif category == "armour":
+    display_equipment_stats(new_player.armour, display_price=False)
 
   print_one_liner(f"{Colours.fg.blue}-")
 
@@ -272,7 +275,7 @@ class PlayerInventory:
   def use_item(cls):
     player_choice = ''
 
-    while player_choice not in cls.items_dict and player_choice != 'back':
+    while player_choice not in cls.items_dict and player_choice != "back":
       clear()
       print(f"""{Colours.fg.orange}Which item would you like to use?
 {Colours.fg.lightblue}(Type the inventory slot number of the item you want to use)
@@ -282,43 +285,17 @@ class PlayerInventory:
       cls.display_items_dict(clear_the_screen=False)
       player_choice = input(f"{Colours.input_colour}> ").lower().strip()
 
-    if player_choice != 'back' and cls.items_dict[player_choice] != [None, 0]:
+    if player_choice != "back" and cls.items_dict[player_choice] != [None, 0]:
       item_to_use = cls.items_dict[player_choice][0]
-      cls.remove_item(player_choice)
-
-      numbers_to_round = ("weapon.accuracy", "weapon.crit_chance")
       
-      #Increasing effects
-      for attribute in item_to_use.increases:
-        if attribute == "current_health":
-          Player.heal(item_to_use.increases[attribute])
-
-        else:
-          object_chain = attribute.split('.')
-          total = Player.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
-
-          increases_by = calculate_percentage(percentage=item_to_use.increases[attribute], total=total)
-
-          if attribute in numbers_to_round:
-            increases_by = round(increases_by)
-
-          Player.local_attributes[object_chain[0]].local_attributes[object_chain[1]] -= increases_by
-
+      #Applying item effects
+      new_player.apply_effects("Increase", item_to_use.increases)
       
-      #Decreasing effects
-      for attribute in item_to_use.decreases:
-        object_chain = attribute.split('.')
-        total = Player.current_enemy.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
+      new_player.apply_effects("Decrease", item_to_use.decreases)
 
-        decreases_by = calculate_percentage(percentage=item_to_use.decreases[attribute], total=total)
-
-        if attribute in numbers_to_round:
-          decreases_by = round(decreases_by)
-          
-        Player.current_enemy.local_attributes[object_chain[0]].local_attributes[object_chain[1]] += decreases_by
-      
+     
       #Incrementing turns
-      Player.items_used[item_to_use.name] = item_to_use.affected_turns
+      new_player.items_used[item_to_use.name] = item_to_use.affected_turns
       
       clear()
       print(f"{Colours.fg.orange}You used {item_to_use.name_string}{Colours.fg.orange}.")
@@ -326,6 +303,9 @@ class PlayerInventory:
 
 
     return player_choice in cls.items_dict and cls.items_dict[player_choice] != [None, 0]
+
+    if player_choice != "back":
+      cls.remove_item(player_choice)
 
 
 
@@ -338,8 +318,8 @@ class Shop:
 {Colours.fg.cyan}(Type the {Colours.fg.green}green letters {Colours.fg.cyan}in square brackets according to the {category} you want to buy)
 (Type '{Colours.fg.red}back{Colours.fg.cyan}' to go back){Colours.fg.yellow}
 
-{f"{Colours.fg.yellow + Colours.underline}You have {Player.gold_coins} gold coins{Colours.reset + Colours.fg.yellow}".center(130, "|")}
-""")
+{f"{Colours.fg.yellow + Colours.underline}You have {new_player.gold_coins} gold coins{Colours.reset + Colours.fg.yellow}".center(130, "|")}
+""")#need to make this better
 
 
   @classmethod
@@ -383,21 +363,21 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
   @classmethod
   def handle_money(cls):
     clear()
-    if Player.gold_coins >= cls.total_price:
+    if new_player.gold_coins >= cls.total_price:
       if isinstance(cls.equipment_to_purchase, Weapon) or isinstance(cls.equipment_to_purchase, Armour):
         print(f"{Colours.fg.pink}You bought {Colours.fg.orange + Colours.underline}{cls.equipment_to_purchase.name}{Colours.reset} {Colours.fg.pink}for {Colours.fg.yellow + Colours.underline}{cls.equipment_to_purchase.price} gold coins{Colours.reset + Colours.fg.pink}.")
         sleep(2)
 
       if isinstance(cls.equipment_to_purchase, Weapon):
-        Player.weapon = cls.equipment_to_purchase
+        new_player.weapon = cls.equipment_to_purchase
 
       elif isinstance(cls.equipment_to_purchase, Armour):
-        Player.armour = cls.equipment_to_purchase
+        new_player.armour = cls.equipment_to_purchase
 
       elif isinstance(cls.equipment_to_purchase, Item):
         PlayerInventory.add_item(cls.key_of_equipment_to_purchase, cls.equipment_quantity)
       
-      Player.gold_coins -= cls.total_price
+      new_player.gold_coins -= cls.total_price
 
     else:
       print(f"{Colours.fg.red + Colours.underline + Colours.bold}YOU DON'T HAVE ENOUGH GOLD COINS{Colours.reset}")
@@ -408,22 +388,22 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
   def handle_purchase(cls, category):
     first_player_choice = ''
     second_player_choice = ''
-    valid_inputs_to_go_back = ['back', "'back'"]
+    valid_inputs_to_go_back = ["back", "'back'"]
 
     cls.has_made_purchase = False
 
-    if category == 'weapon':
+    if category == "weapon":
       cls.equipment_dict = all_player_weapons
-    elif category == 'armour':
+    elif category == "armour":
       cls.equipment_dict = all_player_armour
-    elif category == 'item':
+    elif category == "item":
       cls.equipment_dict = all_items
 
     while first_player_choice not in valid_inputs_to_go_back and cls.has_made_purchase == False:
 
       cls.display_initial_message(category)
 
-      if category == 'weapon' or category == 'armour':
+      if category == "weapon" or category == "armour":
         display_current_equipment_stats(category)
 
       for key in cls.equipment_dict: 
@@ -440,7 +420,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
 
           cls.display_confirmation_message()
 
-          if category == 'weapon' or category == 'armour':
+          if category == "weapon" or category == "armour":
             display_current_equipment_stats(category)
           
           second_player_choice = input(f"{Colours.fg.orange}> ").lower().strip()
@@ -454,24 +434,19 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
   def display_shop(cls):
     player_choice = ''
 
-    while player_choice != 'back':
+    while player_choice != "back":
+      valid_inputs = ("weapon", "armour", "item", "back")
       clear()
-      print_title('SHOP')
+      print_title("SHOP")
 
       player_choice = input(f"""{Colours.fg.orange}What would you like to buy?
 
-{Colours.tag('we') + Colours.fg.red} Weapons
-{Colours.tag('arm') + Colours.fg.blue} Armour
-{Colours.tag('it') + Colours.fg.pink} Special Items
-{Colours.tag('back') + Colours.fg.yellow} Go Back
+{Colours.tag("weapon") + Colours.fg.red} Weapons
+{Colours.tag("armour") + Colours.fg.blue} Armour
+{Colours.tag("item") + Colours.fg.pink} Special Items
+{Colours.tag("back") + Colours.fg.yellow} Go Back
 
 {Colours.fg.orange}> """).lower().strip()
 
-      if player_choice == 'we':
-        cls.handle_purchase('weapon')
-
-      elif player_choice == 'arm':
-        cls.handle_purchase('armour')
-
-      elif player_choice == 'it':
-        cls.handle_purchase('item')
+      if player_choice in valid_inputs:
+        cls.handle_purchase(player_choice)
