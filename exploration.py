@@ -2,7 +2,7 @@ from colours import Colours
 from items import PlayerInventory, all_items, display_equipment_stats
 from objects import new_player, all_enemies
 from setting import all_artifacts
-from system import clear, sleep_and_clear
+from system import System, clear, sleep_and_clear
 import random as rdm
 
 
@@ -44,23 +44,36 @@ class Combat:
 
 
   @staticmethod
-  def update_items_used():
-    for item in new_player.items_used:
-      turns_left = new_player.items_used[item]
+  def reset_item_effects(item_name):
+    item = System.get_object(item_name, all_items)
+
+    new_player.apply_item_effects("Decrease", item.increases)
+    new_player.current_enemy.apply_item_effects("Increase", item.decreases)
+
+
+  @classmethod
+  def update_items_used(cls):
+    for item_name in new_player.items_used:
+      turns_left = new_player.items_used[item_name]
 
       if turns_left > 0:
         if turns_left == 1:
           clear()
-          print(f"{all_items[item].name}{Colours.fg.orange}'s effects ran out.")
+          print(f"{System.get_object(item_name, all_items).name_string}{Colours.fg.orange}'s effects ran out.")
           sleep_and_clear(1.5)
 
-        new_player.items_used[item] -= 1
+          cls.reset_item_effects(item_name)
+
+        new_player.items_used[item_name] -= 1
 
 
-  @staticmethod
-  def reset_items_used():
-    for item in new_player.items_used:
-      new_player.items_used[item] = 0
+  @classmethod
+  def reset_combat(cls):
+    for item_name in new_player.items_used:
+      new_player.items_used[item_name] = 0
+      cls.reset_item_effects(item_name)
+
+      #No need to reset health because we are already setting it in cls.set_effects()
 
   
   @staticmethod
@@ -78,9 +91,7 @@ class Combat:
       
       print(f"{Colours.tag(item_number)} {item_used[0].name_string}{Colours.equipment_colour}: {Colours.fg.red}({turns_left} turns left)")
       
-      display_equipment_stats(item_used[0], display_name=False, extra_text=item_number)
-      
-    print('\n')
+      display_equipment_stats(item_used[0], display_price=False, display_name=False, extra_text=item_number)
 
 
   @classmethod
@@ -99,15 +110,15 @@ What Would You Like To Do?
 
 {new_player.items_used}
 
-{new_player.armour.local_attributes}
+{new_player.armour.attributes}
 
-{new_player.weapon.local_attributes}
+{new_player.weapon.attributes}
 """)
     cls.display_items_used()
 
 
   @classmethod
-  def start(cls, enemy=None, is_players_turn=None):
+  def start_combat(cls, enemy=None, is_players_turn=None):
     #Choose enemy
     if enemy == None:
       cls.choose_enemy()
@@ -168,7 +179,7 @@ What Would You Like To Do?
 
 
     new_player.get_tired()
-    cls.reset_items_used()
+    cls.reset_combat()
     
     if new_player.current_enemy.is_dead():
       new_player.current_enemy.drop_loot()

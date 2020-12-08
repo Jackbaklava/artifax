@@ -1,6 +1,6 @@
 from colours import Colours
 from objects import  new_player, Weapon, Armour, all_player_weapons, all_player_armour
-from system import clear, sleep, sleep_and_clear, print_one_liner, print_title, indent, remove_unwanted_chars
+from system import System, clear, sleep, sleep_and_clear
 
 
 
@@ -28,7 +28,7 @@ class Item:
     increased_by = ' ' 
     
     for attribute in self.increases:
-      increased_attributes += word("Player ", Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
+      increased_attributes += word("Player ", Colours.attribute_colour) + word(System.remove_unwanted_chars(attribute), Colours.attribute_colour)
       increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
       
       if attribute != list(self.increases.keys())[-1]:
@@ -48,7 +48,7 @@ class Item:
     decreased_by = ' '
     
     for attribute in self.decreases:
-      decreased_attributes += word("Enemy ", Colours.attribute_colour) + word(remove_unwanted_chars(attribute), Colours.attribute_colour)
+      decreased_attributes += word("Enemy ", Colours.attribute_colour) + word(System.remove_unwanted_chars(attribute), Colours.attribute_colour)
       decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
       
       if attribute != list(self.decreases.keys())[-1]:
@@ -84,7 +84,7 @@ def display_equipment_stats(key,  display_price=True, display_name=True, item_qu
   #jUST MAKE A COLLECTION!!!
   if key in all_player_weapons or key in all_player_armour or key in all_items or key in PlayerInventory.items_dict:
     key_to_display = Colours.tag(key) + ' '
-    space_to_display = indent(key)
+    space_to_display = System.indent(key)
 
   else:
     key_to_display = ''
@@ -137,7 +137,7 @@ def display_equipment_stats(key,  display_price=True, display_name=True, item_qu
     if display_name:
       print(f"{key_to_display}{name_to_display}")
     else:
-      space_to_display = indent(extra_text)
+      space_to_display = System.indent(extra_text)
     
     for line in specific_equipment.description:
       print(space_to_display + line)
@@ -149,7 +149,7 @@ def display_equipment_stats(key,  display_price=True, display_name=True, item_qu
 
 
 def display_current_equipment_stats(category):
-  print_one_liner(f"{Colours.fg.blue}-")
+  System.print_one_liner(f"{Colours.fg.blue}-")
   print(f"{Colours.fg.green + Colours.underline}Your {category.capitalize()}:{Colours.reset}")
 
   if category == "weapon":
@@ -158,7 +158,7 @@ def display_current_equipment_stats(category):
   elif category == "armour":
     display_equipment_stats(new_player.armour, display_price=False)
 
-  print_one_liner(f"{Colours.fg.blue}-")
+  System.print_one_liner(f"{Colours.fg.blue}-")
 
 
 
@@ -288,10 +288,11 @@ class PlayerInventory:
     if player_choice != "back" and cls.items_dict[player_choice] != [None, 0]:
       item_to_use = cls.items_dict[player_choice][0]
       
-      #Applying item effects
-      new_player.apply_effects("Increase", item_to_use.increases)
-      
-      new_player.apply_effects("Decrease", item_to_use.decreases)
+      #Applying item effects to player
+      new_player.apply_item_effects("Increase", item_to_use.increases)
+
+      #Applying item effects to enemy
+      new_player.current_enemy.apply_item_effects("Decrease", item_to_use.decreases)
 
      
       #Incrementing turns
@@ -437,7 +438,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
     while player_choice != "back":
       valid_inputs = ("weapon", "armour", "item", "back")
       clear()
-      print_title("SHOP")
+      System.print_title("SHOP")
 
       player_choice = input(f"""{Colours.fg.orange}What would you like to buy?
 

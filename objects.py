@@ -4,7 +4,7 @@ import items
 import operator
 import random as rdm
 from setting import all_artifacts, all_locations
-from system import sleep, clear, sleep_and_clear, print_title, calculate_percentage
+from system import System, sleep, clear, sleep_and_clear
 
 
 
@@ -18,7 +18,7 @@ class Weapon:
     self.can_drop = can_drop
     
     self.category = 'weapon'
-    self.local_attributes = locals()
+    self.attributes = vars(self)
 
     self.str_damage = f"{damage[0]} - {damage[1]} "
     
@@ -55,7 +55,7 @@ class Armour:
     self.can_drop = can_drop
     
     self.category = 'armour'
-    self.local_attributes = locals()
+    self.attributes = vars(self)
 
     self.str_defense =  f"{int(100 - self.defense * 100)}%"
 
@@ -102,7 +102,7 @@ class Entity:
     object_chain = attribute.split(".")
 
     if need_value:
-      return self.local_attributes[object_chain[0]].local_attributes[object_chain[1]]
+      return self.attributes[object_chain[0]].attributes[object_chain[1]]
     else:
       return object_chain[-1]
 
@@ -113,13 +113,34 @@ class Entity:
 
     else:
       total = self.get_attribute(attribute)
-      update_by = calculate_percentage(percentage=percentage, total=total)
+      update_by = System.calculate_percentage(percentage=percentage, total=total)
 
       numbers_to_round = ("weapon.accuracy", "weapon.crit_chance")
       if attribute in numbers_to_round:
         update_by = round(update_by)
+        
+      object_chain = attribute.split(".")
  
-      self.local_attributes[attribute[0]].local_attributes[attribute[1]] = operate(self.get_attribute(attribute), update_by)
+      self.attributes[object_chain[0]].attributes[object_chain[1]] = operate(self.get_attribute(attribute), update_by)
+      
+      
+  def apply_item_effects(self, mode, attributes_to_update):
+    #Opposite operators because defense and crit chance are better when subtracted (inverse)
+    operators_dict = { "Increase" : operator.sub, 
+                       "Decrease" : operator.add
+    }
+    operate = operators_dict[mode]
+
+    inverse_attributes = ("accuracy")
+    inverse_operate = list(filter(lambda value: not value is operate, operators_dict.values()))[0]
+
+    for attribute in attributes_to_update:
+      equipment_attribute = self.get_attribute(attribute, need_value=False)
+
+      if equipment_attribute in inverse_attributes:
+        operate = inverse_operate
+
+      self.update_attribute(attribute, operate, attributes_to_update[attribute])
 
 
 
@@ -127,7 +148,7 @@ class TemporaryEnemy(Entity):
   armour = darkmail
   weapon = rusty_sword
 
-  local_attributes = locals()
+  attributes = locals()
 
 
 
@@ -155,26 +176,7 @@ class Player(Entity):
                         "Dragon's Amulet" : 0
     }
   
-    self.local_attributes = locals()
-
-
-  def apply_effects(self, mode, attributes_to_update):
-    #Opposite operators because defense and crit chance are better when subtracted (inverse)
-    operators_dict = { "Increase" : (operator.sub, self), 
-                       "Decrease" : (operator.add, self.current_enemy)
-    }
-    operate = operators_dict[mode][0]
-
-    inverse_attributes = ("accuracy")
-    inverse_operate = list(filter(lambda value: not value is operate, operators_dict.values()))[0]
-
-    for attribute in attributes_to_update:
-      equipment_attribute = self.get_attribute(attribute, need_value=False)
-
-      if equipment_attribute in inverse_attributes:
-        operate = inverse_operate
-
-      operators_dict[mode][1].update_attribute(attribute, operate, attributes_to_update[attribute])
+    self.attributes = vars(self)
 
 
   def travel(self):
@@ -223,7 +225,7 @@ class Player(Entity):
     
 
   def heal(self, percentage_to_heal):
-    value_to_heal = calculate_percentage(percentage_to_heal, total=self.max_health)
+    value_to_heal = System.calculate_percentage(percentage_to_heal, total=self.max_health)
     
     self.current_health += value_to_heal
     
@@ -289,10 +291,10 @@ class Player(Entity):
 
 
   def equip(self, equipment_to_equip):
-    if equipment_to_equip.category == 'weapon':
+    if equipment_to_equip.category == "weapon":
       self.weapon = equipment_to_equip
 
-    elif equipment_to_equip.category == 'armour':
+    elif equipment_to_equip.category == "armour":
       self.armour = equipment_to_equip
 
     clear()
@@ -330,7 +332,6 @@ class Player(Entity):
       sleep_and_clear(1.5)
 
 
-  @classmethod
   def escape_from_combat(self):
     print(self)
     self.has_escaped = self.armour.is_lighter_than(self.current_enemy.armour)
@@ -373,7 +374,7 @@ class Enemy(Entity):
     self.spawn_range = range(spawn_range[0], spawn_range[1])
     
     self.gold_coins_drop = gold_coins_drop
-    self.local_attributes = locals()
+    self.attributes = vars(self)
 
 
   def attack(self):
@@ -528,7 +529,7 @@ def display_user_interface():
   ask_for_choice_colour = Colours.fg.orange
 
   clear()
-  print_title('ARTIFAX')
+  System.print_title('ARTIFAX')
 
   print(
 f"""{headings_colour}Your Health:{Colours.reset}{Colours.fg.green} {new_player.current_health} / {new_player.max_health} {Colours.reset}
@@ -541,7 +542,7 @@ Your Weapon:{Colours.reset} {new_player.weapon.name_string}{Colours.reset}
 {gold_colour}
 Gold Coins:{Colours.reset + Colours.fg.yellow} {new_player.gold_coins}{Colours.reset}
 {headings_colour}
-Artifacts Collected:{Colours.reset + Colours.fg.orange} {new_player.number_of_artifacts_collected} / {new_player.total_artifacts}
+Artifacts Collected:{Colours.reset + Colours.fg.orange} {new_player.num_of_artifacts_collected} / {new_player.total_artifacts}
 {headings_colour}
 {Colours.reset + Colours.fg.orange + Colours.underline}
 Things You Can Do:
