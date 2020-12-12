@@ -61,6 +61,11 @@ class Item:
     if len(decreased_attributes) > 1:
       string_to_add = word("Decreased") + decreased_attributes + word("by") + decreased_by
       self.description.append(string_to_add)
+      
+    
+    #Affected turns
+    if self.affected_turns > 0:
+      self.description.append(f"{Colours.fg.red}Affected Turns: {self.affected_turns}")
            
 
 
@@ -251,8 +256,10 @@ class PlayerInventory:
             sleep(2)
 
 
+        #Maybe tuple unpacking
         cls.items_dict[player_choice][0] = item_to_add
         cls.items_dict[player_choice][1] = quantity
+        x = 9
 
 
     clear()

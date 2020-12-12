@@ -13,12 +13,13 @@ Combat.start_combat(is_players_turn=True)
 
 valid_inputs = ("ex", "slep", "trv", "inv", "shp", "art", "help")
 
-while o.new_player.current_health > 0 and o.new_player.artifacts_collected != o.new_player.total_artifacts:
+#This is a MESS
+while o.new_player.is_dead() != True:
   o.display_user_interface()
   player_choice = input(f"{Colours.fg.orange}> ").lower().strip()
 
   if player_choice == 'ex':
-    Combat.start()
+    Combat.start_combat()
 
   elif player_choice == "slep":
     o.new_player.sleep_for_health()
@@ -43,7 +44,7 @@ while o.new_player.current_health > 0 and o.new_player.artifacts_collected != o.
     o.clear()
     print(f"{o.Colours.fg.red + o.Colours.underline}INVALID COMMAND, TYPE THE LETTERS IN THE SQUARE BRACKETS.")
     o.sleep_and_clear(2)
-
-
-
-o.new_player.check_for_death()
+    
+    
+  if o.new_player.is_dead():
+    o.new_player.display_death_message()

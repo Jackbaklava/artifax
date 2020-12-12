@@ -108,11 +108,6 @@ What Would You Like To Do?
 {Colours.tag('u') + Colours.description_colour} Use Item
 {Colours.tag('e') + Colours.description_colour} Escape From Combat{Colours.fg.orange}
 
-{new_player.items_used}
-
-{new_player.armour.attributes}
-
-{new_player.weapon.attributes}
 """)
     cls.display_items_used()
 
@@ -153,7 +148,6 @@ What Would You Like To Do?
         #Player attacking
         if player_choice == 'a':
           new_player.attack()
-          continue
 
         #Player using items
         elif player_choice == 'u':
@@ -168,7 +162,6 @@ What Would You Like To Do?
             break 
           elif not new_player.has_escaped:
             new_player.current_enemy.attack()
-            continue
 
 
       #Enemy's turn

@@ -16,15 +16,20 @@ class Weapon:
     self.crit_chance = crit_chance
     self.price = price
     self.can_drop = can_drop
-    
-    self.category = 'weapon'
-    self.attributes = vars(self)
 
+    #String attributes for displaying stats
     self.str_damage = f"{damage[0]} - {damage[1]} "
     
     first_calc = self.accuracy - 1
     self.str_accuracy = f"{round(first_calc / self.accuracy * 100, 2)}%"
     self.str_crit_chance = f"{round(self.crit_chance ** -1 * 100, 2)}%"
+
+    #Default attributes for every instance
+    self.category = 'weapon'
+    self.attributes = vars(self)
+    self.original_damage = damage
+    self.original_accuracy = accuracy
+    self.original_crit_chance = crit_chance
 
 
 
@@ -53,11 +58,15 @@ class Armour:
     self.weight = weight
     self.price = price
     self.can_drop = can_drop
-    
+
+    #String attributes for displaying stats
+    self.str_defense =  f"{int(100 - self.defense * 100)}%"
+
+    #Default attributes for every instance
     self.category = 'armour'
     self.attributes = vars(self)
-
-    self.str_defense =  f"{int(100 - self.defense * 100)}%"
+    self.original_defense = defense
+    self.original_weight = weight
 
 
   def is_lighter_than(self, armour_to_compare):
@@ -98,8 +107,11 @@ all_player_armour = { "cl" : chainmail,
 
 class Entity:
 
-  def get_attribute(self, attribute, need_value=True):
+  def get_attribute(self, mode="current", attribute=None, need_value=True):
     object_chain = attribute.split(".")
+
+    if mode == "original":
+      object_chain[1] = "original_" + object_chain[1]
 
     if need_value:
       return self.attributes[object_chain[0]].attributes[object_chain[1]]
@@ -112,7 +124,8 @@ class Entity:
       new_player.heal(percentage)
 
     else:
-      total = self.get_attribute(attribute)
+      #Getting the original value
+      total = self.get_attribute("original", attribute)
       update_by = System.calculate_percentage(percentage=percentage, total=total)
 
       numbers_to_round = ("weapon.accuracy", "weapon.crit_chance")
@@ -121,7 +134,9 @@ class Entity:
         
       object_chain = attribute.split(".")
  
-      self.attributes[object_chain[0]].attributes[object_chain[1]] = operate(self.get_attribute(attribute), update_by)
+      #Incrementing/Decrementing the current value
+      #Rounding to avoid nums like 0.800000000002
+      self.attributes[object_chain[0]].attributes[object_chain[1]] = round(operate(self.get_attribute(attribute=attribute), update_by), 2)
       
       
   def apply_item_effects(self, mode, attributes_to_update):
@@ -135,12 +150,15 @@ class Entity:
     inverse_operate = list(filter(lambda value: not value is operate, operators_dict.values()))[0]
 
     for attribute in attributes_to_update:
-      equipment_attribute = self.get_attribute(attribute, need_value=False)
+      equipment_attribute = self.get_attribute(attribute=attribute, need_value=False)
 
       if equipment_attribute in inverse_attributes:
         operate = inverse_operate
 
       self.update_attribute(attribute, operate, attributes_to_update[attribute])
+      
+      
+  is_dead = lambda self: self.current_health <= 0
 
 
 
@@ -353,9 +371,9 @@ class Player(Entity):
     pass
 
 
-  def check_for_death(self):
-    if self.current_health <= 0:
-      print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
+  @staticmethod
+  def display_death_message():
+    print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
       
 
 
@@ -399,9 +417,6 @@ class Enemy(Entity):
       print(f"{self.name_string + Colours.fg.cyan} attacked you, and dealt{Colours.fg.orange} {damage_taken} damage{Colours.fg.cyan}.")
 
     sleep_and_clear(1.5)
-
-
-  is_dead = lambda self: self.current_health <= 0
 
 
   def drop_gold_coins(self):
