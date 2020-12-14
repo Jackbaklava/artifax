@@ -1,6 +1,6 @@
 from colours import Colours
-from items import PlayerInventory, all_items, display_equipment_stats
-from objects import new_player, all_enemies
+from objects import PlayerInventory, all_items, display_equipment_stats
+from entities import new_player, all_enemies
 from setting import all_artifacts
 from system import System, clear, sleep_and_clear
 import random as rdm
@@ -70,10 +70,13 @@ class Combat:
   @classmethod
   def reset_combat(cls):
     for item_name in new_player.items_used:
-      new_player.items_used[item_name] = 0
-      cls.reset_item_effects(item_name)
+      turns_left = new_player.items_used[item_name]
 
-      #No need to reset health because we are already setting it in cls.set_effects()
+      new_player.items_used[item_name] = 0
+      if turns_left > 0:
+        cls.reset_item_effects(item_name)
+
+      #No need to reset enemy health because we are already setting it in cls.set_effects()
 
   
   @staticmethod
@@ -107,6 +110,7 @@ What Would You Like To Do?
 {Colours.tag('a') + Colours.description_colour} Attack {new_player.current_enemy.name_string}
 {Colours.tag('u') + Colours.description_colour} Use Item
 {Colours.tag('e') + Colours.description_colour} Escape From Combat{Colours.fg.orange}
+
 
 """)
     cls.display_items_used()
