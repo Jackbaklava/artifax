@@ -1,5 +1,5 @@
 from colours import Colours
-import objects as o
+import entities
 import os
 from time import sleep
 
@@ -37,7 +37,7 @@ class System:
 
   print_one_liner = lambda string: print(string * 130)
 
-  line_break = lambda: f'{o.new_player.current_location.line_colour}{"_" * 130}{Colours.reset}'
+  line_break = lambda: f'{entities.new_player.current_location.line_colour}{"_" * 130}{Colours.reset}'
 
   indent = lambda text: ' ' * len(list(str(text))) + '   ' 
 

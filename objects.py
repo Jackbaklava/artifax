@@ -1,573 +1,460 @@
 from colours import Colours
-import exploration
-import items
-import operator
-import random as rdm
-from setting import all_artifacts, all_locations
-from system import System, sleep, clear, sleep_and_clear
+from entities import  new_player, Weapon, Armour, all_player_weapons, all_player_armour
+from system import System, clear, sleep, sleep_and_clear
 
 
 
-class Weapon:
-  def __init__(self, name, damage, accuracy, crit_chance=10, price=0, can_drop=False):
+class Item:
+  def __init__(self, name, price, affected_turns=0, increases={}, decreases={}):
+    self.name = name
     self.name_string = f"{Colours.equipment_colour}{name}"
-    self.damage = damage
-    self.accuracy = accuracy
-    self.crit_chance = crit_chance
     self.price = price
-    self.can_drop = can_drop
-
-    #String attributes for displaying stats
-    self.str_damage = f"{damage[0]} - {damage[1]} "
     
-    first_calc = self.accuracy - 1
-    self.str_accuracy = f"{round(first_calc / self.accuracy * 100, 2)}%"
-    self.str_crit_chance = f"{round(self.crit_chance ** -1 * 100, 2)}%"
+    self.affected_turns = affected_turns
+    self.increases = increases
+    self.decreases = decreases
 
-    #Default attributes for every instance
-    self.category = 'weapon'
-    self.attributes = vars(self)
-    self.original_damage = damage
-    self.original_accuracy = accuracy
-    self.original_crit_chance = crit_chance
-
-
-
-#Enemy weapons
-rusty_sword = Weapon("Rusty Sword", (3, 19), 7, can_drop=True)
-mortemir = Weapon("Mortemir", (12, 30), 15)
-doomsblade = Weapon("Doomsblade", (10, 45), 20)
-
-#Player weapons
-copper_katana = Weapon("Copper Katana", (3, 19), 8, crit_chance=20)
-iron_sword = Weapon("Iron Sword", (7, 25), 13, crit_chance=13, price=75)
-great_axe = Weapon("Great Axe", (15, 30), 9, crit_chance=8, price=150)
-anduril = Weapon("Andúril", (10, 30), 15, crit_chance=5, price=150)
-
-all_player_weapons = { "insd" : iron_sword,
-                       "gtae" : great_axe,
-                       "al" : anduril
-}
-
-
-
-class Armour:
-  def __init__(self, name, defense, weight, price=0, can_drop=False):
-    self.name_string = f"{Colours.equipment_colour}{name}"
-    self.defense = defense
-    self.weight = weight
-    self.price = price
-    self.can_drop = can_drop
-
-    #String attributes for displaying stats
-    self.str_defense =  f"{int(100 - self.defense * 100)}%"
-
-    #Default attributes for every instance
-    self.category = 'armour'
-    self.attributes = vars(self)
-    self.original_defense = defense
-    self.original_weight = weight
-
-
-  def is_lighter_than(self, armour_to_compare):
-    armour_weight_scores = { "Light" : 3,
-                             "Medium" : 2,
-                             "Heavy" : 1
-    }
-    player_armour_score = armour_weight_scores[self.weight]
-    enemy_armour_score = armour_weight_scores[armour_to_compare.weight]
-
-    if player_armour_score > enemy_armour_score:
-      int_range = range(1, 76)
-    elif player_armour_score == enemy_armour_score:
-      int_range = range(1, 51)
-    elif player_armour_score < enemy_armour_score:
-      int_range = range(1, 26)
-
-    rdm_int = rdm.randint(1, 100)
-    return rdm_int in int_range
-
-
-
-#Enemy armour
-darkmail = Armour("Darkmail", 0.8, "Medium", can_drop=True)
-
-#Player armour
-leather_tunic = Armour("Leather Tunic", 1, "Light", 0)
-chainmail = Armour("Chanimail", 0.75, "Medium", 100)
-mithril_chestplate = Armour("Mithril Chestplate", 0.65, "Light", 175)
-guardian_armour = Armour("Guardian Armour", 0.4, "Heavy", 200)
-
-all_player_armour = { "cl" : chainmail,
-                      "mlce" : mithril_chestplate,
-                      "gnar" : guardian_armour
-}
-
-
-
-class Entity:
-
-  def get_attribute(self, mode="current", attribute=None, need_value=True):
-    object_chain = attribute.split(".")
-
-    if mode == "original":
-      object_chain[1] = "original_" + object_chain[1]
-
-    if need_value:
-      return self.attributes[object_chain[0]].attributes[object_chain[1]]
-    else:
-      return object_chain[-1]
-
-
-  def update_attribute(self, attribute, operate, percentage):
-    if attribute == "current_health":
-      new_player.heal(percentage)
-
-    else:
-      #Getting the original value
-      total = self.get_attribute("original", attribute)
-      update_by = System.calculate_percentage(percentage=percentage, total=total)
-
-      numbers_to_round = ("weapon.accuracy", "weapon.crit_chance")
-      if attribute in numbers_to_round:
-        update_by = round(update_by)
+    self.category = "item"
+    
+  
+    #Creating the item's description
+    self.description = []
+    
+    word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
+    comma = word(", ")
+    
+    #Increased effects AKA description[0]
+    increased_attributes = ' '
+    increased_by = ' ' 
+    
+    for attribute in self.increases:
+      increased_attributes += word("Player ", Colours.attribute_colour) + word(System.remove_unwanted_chars(attribute), Colours.attribute_colour)
+      increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
+      
+      if attribute != list(self.increases.keys())[-1]:
+        increased_attributes += comma
+        increased_by += comma
+      else:
+        increased_attributes += ' '
+        increased_by += ' '
         
-      object_chain = attribute.split(".")
- 
-      #Incrementing/Decrementing the current value
-      #Rounding to avoid nums like 0.800000000002
-      self.attributes[object_chain[0]].attributes[object_chain[1]] = round(operate(self.get_attribute(attribute=attribute), update_by), 2)
+    if len(increased_attributes) > 1:
+      string_to_add = word("Increased") + increased_attributes + word("by") + increased_by
+      self.description.append(string_to_add)
+        
+        
+    #Decreased effects AKA description[1]
+    decreased_attributes = ' '
+    decreased_by = ' '
+    
+    for attribute in self.decreases:
+      decreased_attributes += word("Enemy ", Colours.attribute_colour) + word(System.remove_unwanted_chars(attribute), Colours.attribute_colour)
+      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
       
+      if attribute != list(self.decreases.keys())[-1]:
+        decreased_attributes += comma
+        decreased_by += comma
+      else:
+        decreased_attributes += ' '
+        decreased_by += ' '
       
-  def apply_item_effects(self, mode, attributes_to_update):
-    #Opposite operators because defense and crit chance are better when subtracted (inverse)
-    operators_dict = { "Increase" : operator.sub, 
-                       "Decrease" : operator.add
-    }
-    operate = operators_dict[mode]
-
-    inverse_attributes = ("accuracy")
-    inverse_operate = list(filter(lambda value: not value is operate, operators_dict.values()))[0]
-
-    for attribute in attributes_to_update:
-      equipment_attribute = self.get_attribute(attribute=attribute, need_value=False)
-
-      if equipment_attribute in inverse_attributes:
-        operate = inverse_operate
-
-      self.update_attribute(attribute, operate, attributes_to_update[attribute])
+    if len(decreased_attributes) > 1:
+      string_to_add = word("Decreased") + decreased_attributes + word("by") + decreased_by
+      self.description.append(string_to_add)
       
+    
+    #Affected turns
+    if self.affected_turns > 0:
+      self.description.append(f"{Colours.fg.red}Affected Turns: {self.affected_turns}")
+           
+
+
+vial_of_healing = Item("Vial of Healing", price=25, increases={"current_health" : 25})
+
+flask_of_healing = Item("Flask of Healing", price=25, increases={"current_health" : 50})
+
+kings_elixir = Item("King's Elixir", 25, 2, increases={"armour.defense" : 25, "weapon.accuracy" : 50})
+
+dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={"armour.defense" : 50})
+
+
+all_items = { "vlohg" : vial_of_healing,
+              "fkohg" : flask_of_healing,
+              "kser" : kings_elixir,
+              "dsat" : dragons_amulet
+}
+
+
+def display_equipment_stats(key,  display_price=True, display_name=True, item_quantity='', extra_text=None):
+  #jUST MAKE A COLLECTION!!!
+  if key in all_player_weapons or key in all_player_armour or key in all_items or key in PlayerInventory.items_dict:
+    key_to_display = Colours.tag(key) + ' '
+    space_to_display = System.indent(key)
+
+  else:
+    key_to_display = ''
+    space_to_display = ''
+    specific_equipment = key
+
+
+  if key in all_player_weapons:
+    specific_equipment = all_player_weapons[key]
+
+  elif key in all_player_armour:
+    specific_equipment = all_player_armour[key]
+
+  elif key in all_items:
+    specific_equipment = all_items[key]
+
+  elif key in PlayerInventory.items_dict:
+    specific_equipment = PlayerInventory.items_dict[key][0]
+    item_quantity = PlayerInventory.items_dict[key][1]
+
+
+  if display_price:
+    price_string = f"{space_to_display}{Colours.fg.yellow}Price: {specific_equipment.price}"
+  else:
+    price_string = ''
+    
+  if display_name:
+    name_to_display = specific_equipment.name_string
+  else:
+    name_to_display = ''
+
+  if type(item_quantity) == int:
+    item_quantity = str(item_quantity) + ' '
+
+
+  if isinstance(specific_equipment, Weapon):
+    print(f"""{key_to_display}{name_to_display}
+{space_to_display}{Colours.fg.red}Damage: {specific_equipment.str_damage}
+{space_to_display}{Colours.fg.orange}Crit Chance: {specific_equipment.str_crit_chance}
+{space_to_display}{Colours.fg.cyan}Accuracy: {specific_equipment.str_accuracy}
+{price_string}""")
+
+  elif isinstance(specific_equipment, Armour):
+    print(f"""{key_to_display}{name_to_display}
+{space_to_display}{Colours.fg.red}Defense: {specific_equipment.str_defense}
+{space_to_display}{Colours.fg.cyan}Weight: {specific_equipment.weight}
+{price_string}""")
+    
+  elif isinstance(specific_equipment, Item):
+    if display_name:
+      print(f"{key_to_display}{name_to_display}")
+    else:
+      space_to_display = System.indent(extra_text)
+    
+    for line in specific_equipment.description:
+      print(space_to_display + line)
+    
+    if price_string != '':
+      print(price_string)
       
-  is_dead = lambda self: self.current_health <= 0
+  print('\n')
+
+
+def display_current_equipment_stats(category):
+  System.print_one_liner(f"{Colours.fg.blue}-")
+  print(f"{Colours.fg.green + Colours.underline}Your {category.capitalize()}:{Colours.reset}")
+
+  if category == "weapon":
+    display_equipment_stats(new_player.weapon, display_price=False)
+      
+  elif category == "armour":
+    display_equipment_stats(new_player.armour, display_price=False)
+
+  System.print_one_liner(f"{Colours.fg.blue}-")
 
 
 
-class TemporaryEnemy(Entity):
-  armour = darkmail
-  weapon = rusty_sword
-
-  attributes = locals()
-
-
-
-class Player(Entity):
-  #I didn't put all the attributes as parameters because it looks ugly, and because any instances created from this object will always have these default arguments
-  def __init__(self):
-    self.current_health = 100
-    self.max_health = 100
-    self.armour = leather_tunic
-    self.weapon = anduril
-    self.current_location = all_locations["vod"]
-    self.gold_coins = 50
-
-    self.artifacts_collected = []
-    self.artifacts_not_collected = list(all_artifacts)
-    self.num_of_artifacts_collected = len(self.artifacts_collected)
-    self.total_artifacts = len(all_artifacts)
-
-    self.is_tired = [False, False, False]
-  
-    #Combat variables
-    self.current_enemy = TemporaryEnemy
-    self.has_escaped = None
-    self.items_used = { "King's Elixir" : 0,
-                        "Dragon's Amulet" : 0
-    }
-  
-    self.attributes = vars(self)
+class PlayerInventory:
+  items_dict = { '1' : [None, 0],
+                 '2' : [flask_of_healing, 1],
+                 '3' : [dragons_amulet, 23],
+                 '4' : [kings_elixir, 2],
+                 '5' : [None, 0]
+  }
+  total_slots = len(items_dict)
 
 
-  def travel(self):
-    player_choice = ''
-    locations_copy = all_locations.copy()
-    del locations_copy['gd']
-
-    while player_choice not in locations_copy and player_choice != 'back':
+  @classmethod
+  def display_items_dict(cls, clear_the_screen):
+    if clear_the_screen:
       clear()
-      print(f"{Colours.fg.orange}Where Would You Like To Travel?" + '\n')
+    else:
+      sleep(1)
 
-      for key in locations_copy:
-        location = all_locations[key]
-
-        if location != self.current_location:
-          print(f"{Colours.fg.green + Colours.underline}[{key}]{Colours.reset}{location.colour} {location.name}")
-
-      print('\n' + f"{Colours.fg.green + Colours.underline}[back]{Colours.reset + Colours.fg.yellow} Go Back" + '\n')
-      player_choice = input(f"{Colours.fg.orange}> ")
-
-
-    if player_choice in all_locations:
-      self.current_location = all_locations[player_choice]
-
-      clear()
-      print(f"{Colours.fg.orange}You travelled to {self.current_location.colour + Colours.underline + Colours.bold}{self.current_location.name}{Colours.reset + Colours.fg.orange}.")
-
-      sleep_and_clear(2)
+    for key in cls.items_dict:
+      if cls.items_dict[key] == [None, 0]:
+        print(f"{Colours.tag(key)} {Colours.none_string}")
+        print('\n')
+      else:
+        display_equipment_stats(key, display_price=False, item_quantity=cls.items_dict[key][1])
 
 
-  def open_artipedia(self):
-    clear()
-    print(f"{Colours.fg.orange + Colours.bold}Artifacts Collected:{Colours.reset}")
+  @classmethod
+  def item_to_add_is_in_inventory(cls, item_to_look_for):
+    item_has_been_found = False
     
-    for artifact in self.artifacts_collected:
-      artifact.display_artifact()
-
-    print('\n')
-    print(f"{Colours.fg.orange + Colours.bold}Artifacts Not Collected:{Colours.reset}")
-    
-    for artifact in self.artifacts_not_collected:
-      artifact.display_artifact()
+    for key in cls.items_dict:
+      if item_to_look_for == cls.items_dict[key][0]:
+        item_has_been_found = True
+        break
       
-    print('\n')
-    input(f"{Colours.fg.orange}> ")
-    
-
-  def heal(self, percentage_to_heal):
-    value_to_heal = System.calculate_percentage(percentage_to_heal, total=self.max_health)
-    
-    self.current_health += value_to_heal
-    
-    if self.current_health > self.max_health:
-      self.current_health = self.max_health
-      
-    clear()
-    print(f"{Colours.fg.cyan}You regained {Colours.fg.red + Colours.underline}{percentage_to_heal}%{Colours.reset + Colours.fg.cyan} of your {Colours.fg.green}health{Colours.fg.cyan}.")
-    sleep_and_clear(2)
+    return item_has_been_found
 
 
-  def get_tired(self):
-    for index, value in enumerate(self.is_tired):
-      if value == False:
-        self.is_tired[index] = True
+  @classmethod
+  def inventory_has_empty_slot(cls):
+    empty_slot_found = False
+    
+    for key in cls.items_dict:
+      if cls.items_dict[key] == [None, 0]:
+        empty_slot_found = True
+        cls.empty_slot_key = key
         break
 
+    return empty_slot_found
+  
 
-  def sleep_for_health(self):
-    player_choice = ""
-    valid_inputs = ('short', 'long', 'back')
-    not_tired_string = f"{Colours.fg.red + Colours.underline}You Try To Sleep, But Feel Well Rested. Get Tired By Defeating Enemies In The Wilderness."
-    
-    while player_choice not in valid_inputs:
-      clear()
-      player_choice = input(f"""{Colours.fg.orange}Which rest would you like to take?
+  @classmethod
+  def add_item(cls, item_key, quantity=1):
+    item_to_add = all_items[item_key]
 
-{Colours.fg.green + Colours.underline}[short]{Colours.reset + Colours.fg.yellow} Short Rest {Colours.fg.red + Colours.underline}(Heals 50% of your health){Colours.reset}
-{Colours.fg.green + Colours.underline}[long]{Colours.reset + Colours.fg.yellow} Long Rest {Colours.fg.red + Colours.underline}(Heals 100% of your health{Colours.reset + Colours.fg.red} + {Colours.fg.red + Colours.underline}Chance to get attacked{Colours.reset + Colours.fg.red})
+    if cls.item_to_add_is_in_inventory(item_to_add):
+      for key in cls.items_dict:
+        if cls.items_dict[key][0] == item_to_add:
+          cls.items_dict[key][1] += quantity
 
-{Colours.tag('back')} {Colours.fg.yellow} Go Back
+    else:
+      if cls.inventory_has_empty_slot():
+        cls.items_dict[cls.empty_slot_key] = [item_to_add, quantity]
 
-{Colours.fg.orange}
-> """).lower().strip()
-
-      clear()
-
-      if player_choice == 'short':
-        if self.is_tired[0] and self.is_tired[1]:
-          self.is_tired[0] = False
-          self.is_tired[1] = False
-          
-          self.heal(50)
-
-        else:
-          print(not_tired_string)
-          sleep_and_clear(3)
-
-
-      elif player_choice == 'long':
-        if False not in self.is_tired:
-          self.is_tired = [False, False, False]
-          
-          self.heal(100)
-
-          rdm_int = rdm.randint(1,5)
-          if rdm_int == 5:
-            exploration.Combat.start(goblin, is_players_turn=False)
-            
-        else:
-          print(not_tired_string)
-          sleep_and_clear(3)
-
-
-  def equip(self, equipment_to_equip):
-    if equipment_to_equip.category == "weapon":
-      self.weapon = equipment_to_equip
-
-    elif equipment_to_equip.category == "armour":
-      self.armour = equipment_to_equip
-
-    clear()
-    print(f"{Colours.fg.orange}You equipped {equipment_to_equip.name_string}{Colours.fg.orange}.")
-    sleep_and_clear(1)
-
-
-  def attack(self):
-    clear()
-    rdm_int = rdm.randint(1, self.weapon.accuracy)
-
-    if rdm_int == 1:
-      rdm_int = rdm.randint(1,2)
-      if rdm_int == 1:
-        print(f"{self.current_enemy.name_string}{Colours.fg.cyan} dodged your attack.")
       else:
-        print(f"{Colours.fg.lightblue}You missed your attack.")
-      sleep_and_clear(1.5)
+        player_choice = ''
+        clear()
+        print(f"{Colours.fg.orange + Colours.bold + Colours.underline}Your inventory is currently full.{Colours.reset}")
+        sleep(1.5)
 
-    else:
-      player_attack_damage = self.weapon.damage
-      damage_taken = round(rdm.randint(player_attack_damage[0], player_attack_damage[1]) * self.current_enemy.armour.defense)
+        while player_choice not in cls.items_dict:
+          clear()
+          print(f"""{Colours.fg.red}Which item would you like to remove?   
+{Colours.reset + Colours.fg.cyan}(Type a number from  1 to {cls.total_slots}, according to the item number you want to replace){Colours.fg.yellow}
 
-      rdm_int = rdm.randint(1, self.weapon.crit_chance)
-
-      if rdm_int == 1:
-        print(f"{Colours.fg.orange + Colours.bold + Colours.underline}It's a critical hit!!!{Colours.reset}")
-        damage_taken = damage_taken * 2
-        sleep_and_clear(1)
-  
-  
-      self.current_enemy.current_health -= damage_taken
-      
-      print(f"{Colours.fg.cyan}You attacked {self.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_taken} damage{Colours.fg.cyan}.")
-      sleep_and_clear(1.5)
-
-
-  def escape_from_combat(self):
-    print(self)
-    self.has_escaped = self.armour.is_lighter_than(self.current_enemy.armour)
-
-    clear()
-    if self.has_escaped:
-      print(f"{Colours.fg.cyan}You successfully escaped from {self.current_enemy.name_string}{Colours.fg.cyan}.")   
-
-    else:
-      print(f"""{Colours.fg.cyan}You tried to escape from {self.current_enemy.name_string}{Colours.fg.cyan}, but failed.
-
-{self.current_enemy.name_string} {Colours.fg.cyan} gets another turn.
+{Colours.fg.orange + Colours.underline}Item you want to buy:
 """)
-    sleep_and_clear(2)
+          display_equipment_stats(item_key, item_quantity=quantity)
+          print('\n')
+          
+          cls.display_items_dict(clear_the_screen=False)
+          
+          player_choice = input(f"{Colours.input_colour}> ")
+
+          if player_choice not in cls.items_dict:
+            clear()
+            print(f"{Colours.fg.red + Colours.underline}Please enter a number from 1 to {cls.total_slots}.{Colours.reset}")
+            sleep(2)
 
 
-  @staticmethod
-  def ask_for_help():
-    pass
+        #Maybe tuple unpacking
+        cls.items_dict[player_choice][0] = item_to_add
+        cls.items_dict[player_choice][1] = quantity
+        x = 9
 
 
-  @staticmethod
-  def display_death_message():
-    print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
-      
-
-
-new_player = Player()
-
-
-
-class Enemy(Entity):
-  def __init__(self, name, max_health, armour, weapon, spawn_location, spawn_range, gold_coins_drop=(1,50)):
-    self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
-    self.max_health = max_health
-    self.armour = armour
-    self.weapon = weapon
-    
-    self.spawn_location = list(map(lambda key: all_locations[key], spawn_location))
-    self.spawn_range = range(spawn_range[0], spawn_range[1])
-    
-    self.gold_coins_drop = gold_coins_drop
-    self.attributes = vars(self)
-
-
-  def attack(self):
     clear()
-    rdm_int = rdm.randint(1, self.weapon.accuracy)
-
-    #Enemy missed its attack
-    if rdm_int == 1:
-      rdm_int = rdm.randint(1,2)
-      if rdm_int == 1:
-        print(f"{Colours.fg.cyan}You dodged {self.name_string}{Colours.fg.cyan}'s attack.")
-      else:
-        print(f"{self.name_string}{Colours.fg.cyan} missed it's attack.")
-
-    #Enemy hit its attack
-    else:
-      enemy_attack_damage = self.weapon.damage
-      damage_taken = round(rdm.randint(enemy_attack_damage[0], enemy_attack_damage[1]) * new_player.armour.defense)
-
-      new_player.current_health -= damage_taken
-
-      print(f"{self.name_string + Colours.fg.cyan} attacked you, and dealt{Colours.fg.orange} {damage_taken} damage{Colours.fg.cyan}.")
-
+    print(f"{Colours.fg.orange}You received {Colours.bold + Colours.fg.red}{quantity} {Colours.fg.green}{item_to_add.name}{Colours.reset + Colours.fg.orange}.")
     sleep_and_clear(1.5)
 
 
-  def drop_gold_coins(self):
-    gold_coins_dropped = rdm.randint(self.gold_coins_drop[0], self.gold_coins_drop[1])
-    new_player.gold_coins += gold_coins_dropped
+  @classmethod
+  def remove_item(cls, item_slot):
+    item_quantity = cls.items_dict[item_slot][1]
     
-    print(f"{Colours.fg.lightblue}You recieved {Colours.fg.yellow}{gold_coins_dropped} gold coins{Colours.fg.lightblue}.")
-  
-  
-  def drop_equipment(self, equipment_to_drop):
-    valid_inputs = ('y', 'n')
+    if item_quantity > 1:
+      cls.items_dict[item_slot][1] -= 1
+      
+    else:
+      cls.items_dict[item_slot] = [None, 0]
+
+
+  @classmethod
+  def use_item(cls):
     player_choice = ''
 
-    while player_choice not in valid_inputs:
+    while player_choice not in cls.items_dict and player_choice != "back":
       clear()
-      print(f"""{Colours.fg.orange}You found {equipment_to_drop.name_string}{Colours.fg.orange}.
+      print(f"""{Colours.fg.orange}Which item would you like to use?
+{Colours.fg.lightblue}(Type the inventory slot number of the item you want to use)
+{Colours.fg.cyan}(Type '{Colours.fg.green}back{Colours.fg.cyan}' to go back)
 
-      """)
-      sleep(1)
+""")
+      cls.display_items_dict(clear_the_screen=False)
+      player_choice = input(f"{Colours.input_colour}> ").lower().strip()
 
-      items.display_current_equipment_stats(equipment_to_drop.category)
-
-      print(f"{Colours.fg.green + Colours.underline}{equipment_to_drop.category.capitalize()} you found:{Colours.reset}""")
-      items.display_equipment_stats(equipment_to_drop, display_price=False)
-
-      print(f"""{Colours.fg.orange}Are you sure you want to equip {equipment_to_drop.name_string} {Colours.fg.orange}?
+    if player_choice != "back" and cls.items_dict[player_choice] != [None, 0]:
+      item_to_use = cls.items_dict[player_choice][0]
       
-{Colours.tag("y")} {Colours.fg.blue}Yes
-{Colours.tag('n')} {Colours.fg.blue}No  
-      """)
+      #Applying item effects to player
+      new_player.apply_item_effects("Increase", item_to_use.increases)
 
-      player_choice = input(f"{Colours.input_colour}> ")
+      #Applying item effects to enemy
+      new_player.current_enemy.apply_item_effects("Decrease", item_to_use.decreases)
 
-    if player_choice == 'y':
-      new_player.equip(equipment_to_drop)
+     
+      #Incrementing turns
+      new_player.items_used[item_to_use.name] = item_to_use.affected_turns
+      
+      clear()
+      print(f"{Colours.fg.orange}You used {item_to_use.name_string}{Colours.fg.orange}.")
+      sleep_and_clear(2)
 
-    elif player_choice == 'n':
-      pass
 
-  
-    
-  def drop_loot(self):
+    return player_choice in cls.items_dict and cls.items_dict[player_choice] != [None, 0]
+
+    if player_choice != "back":
+      cls.remove_item(player_choice)
+
+
+
+class Shop:
+
+  @staticmethod
+  def display_initial_message(category):
     clear()
-    print(f"{Colours.fg.green}You defeated {new_player.current_enemy.name_string}{Colours.fg.green}!!!")
-    sleep_and_clear(2)
+    print(f"""{Colours.fg.orange}Which {category} would you like to buy?
+{Colours.fg.cyan}(Type the {Colours.fg.green}green letters {Colours.fg.cyan}in square brackets according to the {category} you want to buy)
+(Type '{Colours.fg.red}back{Colours.fg.cyan}' to go back){Colours.fg.yellow}
 
-    if not self is artifact_keeper:
-      rdm_int = rdm.randint(1, 100)
-
-      #drop gold coins
-      if rdm_int in range(1, 91):
-        self.drop_gold_coins()
-
-      #drop weapon
-      elif rdm_int in range(91, 96):
-        if self.weapon.can_drop:
-          self.drop_equipment(self.weapon)
-        else:
-          self.drop_gold_coins()
-
-      #drop armour
-      elif rdm_int in range(96, 101):
-        if self.armour.can_drop:
-          self.drop_equipment(self.armour)
-        else:
-          self.drop_gold_coins()
+{f"{Colours.fg.yellow + Colours.underline}You have {new_player.gold_coins} gold coins{Colours.reset + Colours.fg.yellow}".center(130, "|")}
+""")#need to make this better
 
 
-    #drop artifact
-    else:
-      filtered_artifacts = list(filter(lambda artifact: artifact.location is new_player.current_location, all_artifacts))
+  @classmethod
+  def display_confirmation_message(cls):
+    cls.equipment_quantity = 1
+    cls.total_price = cls.equipment_to_purchase.price
+    player_choice = ''
+
+    if isinstance(cls.equipment_to_purchase, Item):
+      while type(player_choice) != int:
+        clear()
+        player_choice = input(f"""{Colours.fg.blue}How many {Colours.fg.orange + 
+Colours.underline}{cls.equipment_to_purchase.name}s{Colours.reset + Colours.fg.blue} would you like to buy?
+
+{Colours.fg.cyan}(Type a {Colours.fg.green}number{Colours.fg.cyan})
+{Colours.fg.orange}
+> """)
+        try:
+          player_choice = int(player_choice)
+        except ValueError:
+           clear()
+           print(f"{Colours.fg.red + Colours.underline}Please enter a number.{Colours.reset}")
+           sleep(2)
+
+      cls.equipment_quantity = player_choice
+      cls.total_price = cls.equipment_to_purchase.price * cls.equipment_quantity
+
+
+    clear()
+    print(f"""{Colours.fg.blue}Are you sure you want to buy {Colours.fg.red + 
+Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purchase.name_string}{Colours.fg.blue} for {Colours.fg.yellow + Colours.underline}{cls.total_price} gold coins{Colours.reset + Colours.fg.blue}?
+
+{Colours.fg.cyan}(Type the {Colours.fg.green}green letters {Colours.fg.cyan}in square brackets to {Colours.fg.green}confirm your purchase{Colours.fg.cyan})
+{Colours.fg.cyan}(Type '{Colours.fg.red}back{Colours.fg.cyan}' to go back)
+
+{Colours.fg.green + Colours.underline}{cls.equipment_to_purchase.category.capitalize()} you want to buy:{Colours.reset}""")
+
+    display_equipment_stats(cls.key_of_equipment_to_purchase, display_price=False)
+
+
+  @classmethod
+  def handle_money(cls):
+    clear()
+    if new_player.gold_coins >= cls.total_price:
+      if isinstance(cls.equipment_to_purchase, Weapon) or isinstance(cls.equipment_to_purchase, Armour):
+        print(f"{Colours.fg.pink}You bought {Colours.fg.orange + Colours.underline}{cls.equipment_to_purchase.name}{Colours.reset} {Colours.fg.pink}for {Colours.fg.yellow + Colours.underline}{cls.equipment_to_purchase.price} gold coins{Colours.reset + Colours.fg.pink}.")
+        sleep(2)
+
+      if isinstance(cls.equipment_to_purchase, Weapon):
+        new_player.weapon = cls.equipment_to_purchase
+
+      elif isinstance(cls.equipment_to_purchase, Armour):
+        new_player.armour = cls.equipment_to_purchase
+
+      elif isinstance(cls.equipment_to_purchase, Item):
+        PlayerInventory.add_item(cls.key_of_equipment_to_purchase, cls.equipment_quantity)
       
-      artifact_to_add = filtered_artifacts[0]
-      new_player.artifacts_collected.append(artifact_to_add)
-      new_player.artifacts_not_collected.remove(artifact_to_add)
+      new_player.gold_coins -= cls.total_price
 
-      print(f"{Colours.fg.green}You received {artifact_to_add.name_string}{Colours.fg.green}.")
+    else:
+      print(f"{Colours.fg.red + Colours.underline + Colours.bold}YOU DON'T HAVE ENOUGH GOLD COINS{Colours.reset}")
+      sleep(2)
+    
+
+  @classmethod
+  def handle_purchase(cls, category):
+    first_player_choice = ''
+    second_player_choice = ''
+    valid_inputs_to_go_back = ["back", "'back'"]
+
+    cls.has_made_purchase = False
+
+    if category == "weapon":
+      cls.equipment_dict = all_player_weapons
+    elif category == "armour":
+      cls.equipment_dict = all_player_armour
+    elif category == "item":
+      cls.equipment_dict = all_items
+
+    while first_player_choice not in valid_inputs_to_go_back and cls.has_made_purchase == False:
+
+      cls.display_initial_message(category)
+
+      if category == "weapon" or category == "armour":
+        display_current_equipment_stats(category)
+
+      for key in cls.equipment_dict: 
+        display_equipment_stats(key)
+
+      first_player_choice = input(f"{Colours.fg.orange}> ").lower().strip()
+
+      if first_player_choice in cls.equipment_dict:
+        cls.key_of_equipment_to_purchase = first_player_choice
+        cls.equipment_to_purchase = cls.equipment_dict[first_player_choice]
+        second_player_choice = ''
+
+        while second_player_choice not in valid_inputs_to_go_back and cls.has_made_purchase == False:
+
+          cls.display_confirmation_message()
+
+          if category == "weapon" or category == "armour":
+            display_current_equipment_stats(category)
+          
+          second_player_choice = input(f"{Colours.fg.orange}> ").lower().strip()
+
+          if second_player_choice == cls.key_of_equipment_to_purchase:
+            cls.handle_money()
+            cls.has_made_purchase = True
 
 
-    sleep_and_clear(1)
+  @classmethod
+  def display_shop(cls):
+    player_choice = ''
 
+    while player_choice != "back":
+      valid_inputs = ("weapon", "armour", "item", "back")
+      clear()
+      System.print_title("SHOP")
 
+      player_choice = input(f"""{Colours.fg.orange}What would you like to buy?
 
-#Enemies that spawn in Valley of Dawn
-bandit = Enemy("Bandit", 65, darkmail, rusty_sword, ["vod"], (1, 191))
-goblin = Enemy("Goblin", 50, darkmail, rusty_sword, ["vod"], (191, 201))
+{Colours.tag("weapon") + Colours.fg.red} Weapons
+{Colours.tag("armour") + Colours.fg.blue} Armour
+{Colours.tag("item") + Colours.fg.pink} Special Items
+{Colours.tag("back") + Colours.fg.yellow} Go Back
 
-#Enemies that spawn in Forest of Fangarr
-orc = Enemy("Orc", 90, darkmail, rusty_sword, ["fof"], (1, 81))
-bone_bat = Enemy("Bone Bat", 50, darkmail, rusty_sword, ["fof"], (81, 131))
-owl_bear = Enemy("Owlbear", 120, darkmail, rusty_sword, ["fof"], (161, 191))
-ashwing = Enemy("Ashwing", 50, darkmail, rusty_sword, ["fof"], (191, 201))
+{Colours.fg.orange}> """).lower().strip()
 
-#Enemies that spawn in Iron Mountains
-highland_orc = Enemy("Highland Orc", 100, darkmail, rusty_sword, ["im"], (1, 71))
-gargoyle = Enemy("Gargoyle", 70, darkmail, rusty_sword, ["im"], (71, 121))
-night_hunter = Enemy("Night Hunter", 100, darkmail, rusty_sword, ["im"], (121, 161))
-kavauri = Enemy("Kavauri", 150, darkmail, rusty_sword, ["im"], (191, 201))
-
-#Artifact Keeper can spawn in any location
-artifact_keeper = Enemy("Artifact Keeper", 150, darkmail, rusty_sword, ["vod", "fof", "im"], (191, 201))
-
-all_enemies = { "goblin" : goblin,
-                "bandit" : bandit,
-
-                "orc" : orc,
-                "bone_bat" : bone_bat,
-                "owl_bear" : owl_bear,
-                "ashwing" : ashwing,
-
-                "highland_orc" : highland_orc,
-                "gargoyle" : gargoyle,
-                "night_hunter" : night_hunter,
-                "kavauri" : kavauri,
-
-                "artifact_keeper" : artifact_keeper
-}
-
-
-#Colour mess, need dict of valid_inputs
-def display_user_interface():
-  headings_colour = Colours.fg.red + Colours.underline
-  gold_colour = Colours.fg.yellow + Colours.underline
-  tags_explanation_colour = Colours.reset + Colours.fg.yellow
-  ask_for_choice_colour = Colours.fg.orange
-
-  clear()
-  System.print_title('ARTIFAX')
-
-  print(
-f"""{headings_colour}Your Health:{Colours.reset}{Colours.fg.green} {new_player.current_health} / {new_player.max_health} {Colours.reset}
-{headings_colour}
-Your Location:{Colours.reset + Colours.fg.orange} {new_player.current_location.name}{Colours.reset}
-{headings_colour}
-Your Armour:{Colours.reset} {new_player.armour.name_string}{Colours.reset}
-{headings_colour}
-Your Weapon:{Colours.reset} {new_player.weapon.name_string}{Colours.reset}
-{gold_colour}
-Gold Coins:{Colours.reset + Colours.fg.yellow} {new_player.gold_coins}{Colours.reset}
-{headings_colour}
-Artifacts Collected:{Colours.reset + Colours.fg.orange} {new_player.num_of_artifacts_collected} / {new_player.total_artifacts}
-{headings_colour}
-{Colours.reset + Colours.fg.orange + Colours.underline}
-Things You Can Do:
-{Colours.tag('ex')} {tags_explanation_colour}Explore The Wilderness
-{Colours.tag('slep')} {tags_explanation_colour}Sleep To Regenerate Your Health
-{Colours.tag('trv')} {tags_explanation_colour}Travel To A Different Location
-{Colours.tag('inv')} {tags_explanation_colour}Open Your Inventory
-{Colours.tag('shp')} {tags_explanation_colour}Open The Shop
-{Colours.tag('art')} {tags_explanation_colour}Open Artipedia{Colours.fg.lightblue + Colours.underline}
-
-[help]{Colours.reset + Colours.fg.red} What am I supposed to do?
-{ask_for_choice_colour + Colours.bold}
-What Would You Like To Do?{Colours.reset}""")
+      if player_choice in valid_inputs:
+        cls.handle_purchase(player_choice)
