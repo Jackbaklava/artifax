@@ -106,7 +106,6 @@ all_player_armour = { "cl" : chainmail,
 
 
 class Entity:
-
   def get_attribute(self, mode="current", attribute=None, need_value=True):
     object_chain = attribute.split(".")
 
