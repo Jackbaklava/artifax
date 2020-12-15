@@ -8,7 +8,6 @@ import random as rdm
 
 
 class Combat:
-
   @staticmethod
   def choose_enemy(enemy_chosen=None):
     if enemy_chosen == None:

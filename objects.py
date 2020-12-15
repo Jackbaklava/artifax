@@ -4,7 +4,48 @@ from system import System, clear, sleep, sleep_and_clear
 
 
 
-class Item:
+class Object:
+  def set_description(self, attributes_dict):
+
+    word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
+    comma = word(", ")
+
+    updates = {True : {"dict" : self.increases,
+                       "name" : "Player ",
+                       "update" : "Increased"
+               },
+
+               False : {"dict" : self.decreases,
+                        "name" : "Enemy ",
+                        "update" : "Decreased"
+               },
+    }
+    updates = updates[attributes_dict is self.increases]
+    updates_dict, entity, update = updates["dict"], updates["name"], updates["update"]
+
+    #Increased effects AKA description[0]
+    updated_attributes = ' '
+    updated_by = ' ' 
+    
+    for attribute in updates_dict:
+      updated_attributes += word(entity, Colours.attribute_colour) + word(System.remove_unwanted_chars(attribute), Colours.attribute_colour)
+
+      updated_by += word(updates_dict[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
+      
+      if attribute != list(updates_dict.keys())[-1]:
+        updated_attributes += comma
+        updated_by += comma
+      else:
+        updated_attributes += ' '
+        updated_by += ' '
+        
+    if len(updated_attributes) > 1:
+      string_to_add = word(update) + updated_attributes + word("by") + updated_by
+      self.description.append(string_to_add)
+    
+
+
+class Item(Object):
   def __init__(self, name, price, affected_turns=0, increases={}, decreases={}):
     self.name = name
     self.name_string = f"{Colours.equipment_colour}{name}"
@@ -16,56 +57,14 @@ class Item:
 
     self.category = "item"
     
-  
-    #Creating the item's description
+    #Setting the item's description
     self.description = []
-    
-    word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
-    comma = word(", ")
-    
-    #Increased effects AKA description[0]
-    increased_attributes = ' '
-    increased_by = ' ' 
-    
-    for attribute in self.increases:
-      increased_attributes += word("Player ", Colours.attribute_colour) + word(System.remove_unwanted_chars(attribute), Colours.attribute_colour)
-      increased_by += word(self.increases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
-      
-      if attribute != list(self.increases.keys())[-1]:
-        increased_attributes += comma
-        increased_by += comma
-      else:
-        increased_attributes += ' '
-        increased_by += ' '
-        
-    if len(increased_attributes) > 1:
-      string_to_add = word("Increased") + increased_attributes + word("by") + increased_by
-      self.description.append(string_to_add)
-        
-        
-    #Decreased effects AKA description[1]
-    decreased_attributes = ' '
-    decreased_by = ' '
-    
-    for attribute in self.decreases:
-      decreased_attributes += word("Enemy ", Colours.attribute_colour) + word(System.remove_unwanted_chars(attribute), Colours.attribute_colour)
-      decreased_by += word(self.decreases[attribute], Colours.attribute_colour) + word('%', Colours.attribute_colour)
-      
-      if attribute != list(self.decreases.keys())[-1]:
-        decreased_attributes += comma
-        decreased_by += comma
-      else:
-        decreased_attributes += ' '
-        decreased_by += ' '
-      
-    if len(decreased_attributes) > 1:
-      string_to_add = word("Decreased") + decreased_attributes + word("by") + decreased_by
-      self.description.append(string_to_add)
-      
-    
-    #Affected turns
+    self.set_description(self.increases)
+    self.set_description(self.decreases)
+
     if self.affected_turns > 0:
       self.description.append(f"{Colours.fg.red}Affected Turns: {self.affected_turns}")
+
            
 
 
@@ -318,7 +317,6 @@ class PlayerInventory:
 
 
 class Shop:
-
   @staticmethod
   def display_initial_message(category):
     clear()
