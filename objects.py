@@ -6,22 +6,21 @@ from system import System, clear, sleep, sleep_and_clear
 
 class Object:
   def set_description(self, attributes_dict):
-
     word = lambda string, colour=Colours.fg.orange: f"{colour}{string}"
     comma = word(", ")
 
     updates = {True : {"dict" : self.increases,
                        "name" : "Player ",
-                       "update" : "Increased"
+                       "update_type" : "Increased"
                },
 
                False : {"dict" : self.decreases,
                         "name" : "Enemy ",
-                        "update" : "Decreased"
+                        "update_type" : "Decreased"
                },
     }
     updates = updates[attributes_dict is self.increases]
-    updates_dict, entity, update = updates["dict"], updates["name"], updates["update"]
+    updates_dict, entity, update_type = updates["dict"], updates["name"], updates["update_type"]
 
     #Increased effects AKA description[0]
     updated_attributes = ' '
@@ -40,7 +39,7 @@ class Object:
         updated_by += ' '
         
     if len(updated_attributes) > 1:
-      string_to_add = word(update) + updated_attributes + word("by") + updated_by
+      string_to_add = word(update_type) + updated_attributes + word("by") + updated_by
       self.description.append(string_to_add)
     
 
@@ -57,7 +56,7 @@ class Item(Object):
 
     self.category = "item"
     
-    #Setting the item's description
+    #Setting item's description
     self.description = []
     self.set_description(self.increases)
     self.set_description(self.decreases)

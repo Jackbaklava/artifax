@@ -20,9 +20,9 @@ class Combat:
 
       
       if len(specific_enemy) > 1:
-        artifact_needed = list(filter(lambda x: x.location is new_player.current_location, all_artifacts))
+        artifact_needed = list(filter(lambda x: x.location is new_player.current_location, all_artifacts))[0]
 
-        if artifact_needed[0] in new_player.artifacts_collected:
+        if artifact_needed in new_player.artifacts_collected:
           specific_enemy.pop()
         else:
           specific_enemy.pop(0)
@@ -170,8 +170,7 @@ What Would You Like To Do?
       #Enemy's turn
       if not cls.is_players_turn:
         cls.is_players_turn = True
-        #Currently, enemies can only attack
-        new_player.current_enemy.attack()
+        new_player.current_enemy.choose_combat_action()
 
 
     new_player.get_tired()

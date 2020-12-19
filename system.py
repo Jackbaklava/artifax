@@ -6,7 +6,6 @@ from time import sleep
 
 
 class System:
-
   @staticmethod
   def calculate_percentage(percentage, current=None, total=None):
     if current == None:

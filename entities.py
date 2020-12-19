@@ -176,6 +176,10 @@ class Entity:
     print(f"{Colours.fg.cyan}{entity} regained {Colours.fg.red + Colours.underline}{percentage_to_heal}%{Colours.reset + Colours.fg.cyan} of {possessive_pronoun} {Colours.fg.green}health{Colours.fg.cyan}.")
     sleep_and_clear(2)
 
+  Need to make this func to complete Boss.stun()
+  def take_damage(self, damage):
+    pass
+
 
   is_dead = lambda self: self.current_health <= 0
 
@@ -401,6 +405,25 @@ class Enemy(Entity):
     self.attributes = vars(self)
 
 
+  def choose_combat_action(self):
+    #Normal enemy
+    if isinstance(self, Enemy):
+      self.attack()
+
+    #Boss
+    else:
+      rdm_int = rdm.randint(1, 100)
+      if rdm_int in self.attacking_chance:
+        self.attack()
+
+      else:
+        if self.current_health <= System.get_percentage(total=self.max_health, percentage=50) and self.has_healed == False:
+          self.heal(50)
+
+        else:
+          self.stun()
+
+
   def attack(self):
     clear()
     rdm_int = rdm.randint(1, self.weapon.accuracy)
@@ -544,18 +567,32 @@ all_enemies = { "goblin" : goblin,
 
 
 class Boss(Entity):
-    def __init__(self, name, max_health, armour, weapon, abilities):
-      self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
-      self.max_health = max_health
-      self.armour = armour
-      self.weapon = weapon
-      self.abilities = abilities
+  def __init__(self, name, max_health, armour, weapon):
+    self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
+    self.max_health = max_health
+    self.armour = armour
+    self.weapon = weapon
+    self.attacking_chance = range(1, 81)
 
-      self.attributes = vars(self)
+    self.has_healed = False
+
+    self.attributes = vars(self)
+
+
+  def stun(self):
+    damage = System.get_percentage(total=new_player.max_health, percentage=5)
+    #Damage Player
+
+    clear()
+    print(f"{self.name_string}{Colours.fg.orange} stunned you for {Colours.fg.red}{damage}{Colours.fg.orange} damage.")
+    print(f"{self.name_string}{Colours.fg.lightblue} gained an extra turn.")
+    sleep_and_clear(2)
+
+    self.attack()
 
 
 
-talgrog_the_giant = Boss("Talgrog The Giant", 200, darkmail, doomsblade, [])
+talgrog_the_giant = Boss("Talgrog The Giant", 200, darkmail, doomsblade)
 
 
 #Colour mess, need dict of valid_inputs
