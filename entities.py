@@ -176,10 +176,19 @@ class Entity:
     print(f"{Colours.fg.cyan}{entity} regained {Colours.fg.red + Colours.underline}{percentage_to_heal}%{Colours.reset + Colours.fg.cyan} of {possessive_pronoun} {Colours.fg.green}health{Colours.fg.cyan}.")
     sleep_and_clear(2)
 
-  Need to make this func to complete Boss.stun()
-  def take_damage(self, damage):
-    pass
 
+  def take_damage(self, damage_taken, multiplier=1, armour_absorption=True):
+    defense = 1
+    if armour_absorption:
+      defense = self.armour.defense
+      
+    damage_taken = round(damage_taken * defense)
+    damage_taken *= multiplier
+    
+    self.current_health -= damage_taken
+    
+    return damage_taken
+  
 
   is_dead = lambda self: self.current_health <= 0
 
@@ -343,20 +352,21 @@ class Player(Entity):
       sleep_and_clear(1.5)
 
     else:
-      player_attack_damage = self.weapon.damage
-      damage_taken = round(rdm.randint(player_attack_damage[0], player_attack_damage[1]) * self.current_enemy.armour.defense)
+      multiplier = 1
+      damage_range = self.weapon.damage
+      raw_damage = rdm.randint(damage_range[0], damage_range[1])
 
       rdm_int = rdm.randint(1, self.weapon.crit_chance)
 
       if rdm_int == 1:
         print(f"{Colours.fg.orange + Colours.bold + Colours.underline}It's a critical hit!!!{Colours.reset}")
-        damage_taken = damage_taken * 2
+        multiplier *= 2
         sleep_and_clear(1)
   
   
-      self.current_enemy.current_health -= damage_taken
+      damage_dealt = self.current_enemy.take_damage(raw_damage, multiplier)
       
-      print(f"{Colours.fg.cyan}You attacked {self.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_taken} damage{Colours.fg.cyan}.")
+      print(f"{Colours.fg.cyan}You attacked {self.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_dealt} damage{Colours.fg.cyan}.")
       sleep_and_clear(1.5)
 
 
@@ -438,12 +448,12 @@ class Enemy(Entity):
 
     #Enemy hit its attack
     else:
-      enemy_attack_damage = self.weapon.damage
-      damage_taken = round(rdm.randint(enemy_attack_damage[0], enemy_attack_damage[1]) * new_player.armour.defense)
+      damage_range = self.weapon.damage
+      raw_damage = rdm.randint(damage_range[0], damage_range[1])
 
-      new_player.current_health -= damage_taken
+      damage_dealt = new_player.take_damage(raw_damage)
 
-      print(f"{self.name_string + Colours.fg.cyan} attacked you, and dealt{Colours.fg.orange} {damage_taken} damage{Colours.fg.cyan}.")
+      print(f"{self.name_string + Colours.fg.cyan} attacked you, and dealt{Colours.fg.orange} {damage_dealt} damage{Colours.fg.cyan}.")
 
     sleep_and_clear(1.5)
 
@@ -548,6 +558,7 @@ kavauri = Enemy("Kavauri", 150, darkmail, rusty_sword, ["im"], (191, 201))
 #Artifact Keeper can spawn in any location
 artifact_keeper = Enemy("Artifact Keeper", 150, darkmail, rusty_sword, ["vod", "fof", "im"], (191, 201))
 
+
 all_enemies = { "goblin" : goblin,
                 "bandit" : bandit,
 
@@ -565,7 +576,6 @@ all_enemies = { "goblin" : goblin,
 }
 
 
-
 class Boss(Entity):
   def __init__(self, name, max_health, armour, weapon):
     self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
@@ -580,8 +590,9 @@ class Boss(Entity):
 
 
   def stun(self):
-    damage = System.get_percentage(total=new_player.max_health, percentage=5)
-    #Damage Player
+    raw_damage = System.get_percentage(total=new_player.max_health, percentage=5)
+    
+    new_player.take_damage(raw_damage, armour_absorption=False)
 
     clear()
     print(f"{self.name_string}{Colours.fg.orange} stunned you for {Colours.fg.red}{damage}{Colours.fg.orange} damage.")

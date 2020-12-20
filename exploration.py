@@ -1,7 +1,7 @@
 from colours import Colours
 from objects import PlayerInventory, all_items, display_equipment_stats
-from entities import new_player, all_enemies
-from setting import all_artifacts
+from entities import new_player, all_enemies, talgrog_the_giant
+from setting import all_artifacts, grimsden
 from system import System, clear, sleep_and_clear
 import random as rdm
 
@@ -29,11 +29,16 @@ class Combat:
 
       enemy_chosen = specific_enemy[0]
 
+    
+    try:  
+      new_player.current_enemy = all_enemies[enemy_chosen]
+      
+    except KeyError:
+      new_player.current_enemy = enemy_chosen
 
-    new_player.current_enemy = all_enemies[enemy_chosen]
 
     clear()
-    print(f"{Colours.fg.cyan}You encountered {new_player.current_enemy.name_string}{Colours.fg.cyan}.")   
+    print(f"{Colours.fg.cyan}You encountered {new_player.current_enemy.name_string}{Colours.fg.cyan}.")
     sleep_and_clear(1)
 
 
@@ -118,10 +123,15 @@ What Would You Like To Do?
   @classmethod
   def start_combat(cls, enemy=None, is_players_turn=None):
     #Choose enemy
-    if enemy == None:
-      cls.choose_enemy()
+    if new_player.current_location is grimsden:
+        cls.choose_enemy(talgrog_the_giant)
+        
     else:
-      cls.choose_enemy(enemy)
+      if enemy == None:
+        cls.choose_enemy()
+         
+      else:
+        cls.choose_enemy(enemy)
 
     #Initialize combat effects
     cls.set_effects()
