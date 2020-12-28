@@ -1,5 +1,5 @@
 from colours import Colours
-from exploration import Combat, Encounters
+from exploration import Combat
 from objects import PlayerInventory, Shop
 import entities as e
 from setting import Storyline
@@ -11,7 +11,7 @@ Combat.start_combat(is_players_turn=True)
 
 # Storyline.play_intro_storyline()
 
-valid_inputs = ("ex", "slep", "trv", "inv", "shp", "art", "help")
+valid_inputs = ("ex", "slep", "trv", "inv", "shp", "art")
 
 #This is a MESS
 while e.new_player.is_dead() != True:
@@ -37,8 +37,6 @@ while e.new_player.is_dead() != True:
   elif player_choice == "art":
     e.new_player.open_artipedia()
 
-  elif player_choice == "help":
-    e.new_player.ask_for_help()
 
   elif player_choice not in valid_inputs:
     e.clear()
@@ -46,5 +44,5 @@ while e.new_player.is_dead() != True:
     e.sleep_and_clear(2)
     
     
-  if e.new_player.is_dead():
-    e.new_player.display_death_message()
+if e.new_player.is_dead():
+  e.new_player.display_death_message()

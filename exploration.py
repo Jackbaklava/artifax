@@ -32,7 +32,6 @@ class Combat:
     
     try:  
       new_player.current_enemy = all_enemies[enemy_chosen]
-      
     except KeyError:
       new_player.current_enemy = enemy_chosen
 
@@ -132,7 +131,7 @@ What Would You Like To Do?
          
       else:
         cls.choose_enemy(enemy)
-
+        
     #Initialize combat effects
     cls.set_effects()
 
@@ -161,6 +160,9 @@ What Would You Like To Do?
         #Player attacking
         if player_choice == 'a':
           new_player.attack()
+          
+          if new_player.current_enemy.is_dead():
+            break
 
         #Player using items
         elif player_choice == 'u':
@@ -183,14 +185,12 @@ What Would You Like To Do?
         new_player.current_enemy.choose_combat_action()
 
 
-    new_player.get_tired()
     cls.reset_combat()
+    
+    new_player.get_tired()
     
     if new_player.current_enemy.is_dead():
       new_player.current_enemy.drop_loot()
-
-
-
-class Encounters:
-  pass
-  
+    
+    if new_player.has_all_artifacts():
+      new_player.lock_location()
