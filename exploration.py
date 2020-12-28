@@ -1,7 +1,7 @@
 from colours import Colours
 from objects import PlayerInventory, all_items, display_equipment_stats
-from entities import new_player, all_enemies
-from setting import all_artifacts
+from entities import new_player, all_enemies, talgrog_the_giant
+from setting import all_artifacts, grimsden
 from system import System, clear, sleep_and_clear
 import random as rdm
 
@@ -20,20 +20,24 @@ class Combat:
 
       
       if len(specific_enemy) > 1:
-        artifact_needed = list(filter(lambda x: x.location is new_player.current_location, all_artifacts))
+        artifact_needed = list(filter(lambda x: x.location is new_player.current_location, all_artifacts))[0]
 
-        if artifact_needed[0] in new_player.artifacts_collected:
+        if artifact_needed in new_player.artifacts_collected:
           specific_enemy.pop()
         else:
           specific_enemy.pop(0)
 
       enemy_chosen = specific_enemy[0]
 
+    
+    try:  
+      new_player.current_enemy = all_enemies[enemy_chosen]
+    except KeyError:
+      new_player.current_enemy = enemy_chosen
 
-    new_player.current_enemy = all_enemies[enemy_chosen]
 
     clear()
-    print(f"{Colours.fg.cyan}You encountered {new_player.current_enemy.name_string}{Colours.fg.cyan}.")   
+    print(f"{Colours.fg.cyan}You encountered {new_player.current_enemy.name_string}{Colours.fg.cyan}.")
     sleep_and_clear(1)
 
 
@@ -118,11 +122,16 @@ What Would You Like To Do?
   @classmethod
   def start_combat(cls, enemy=None, is_players_turn=None):
     #Choose enemy
-    if enemy == None:
-      cls.choose_enemy()
+    if new_player.current_location is grimsden:
+        cls.choose_enemy(talgrog_the_giant)
+        
     else:
-      cls.choose_enemy(enemy)
-
+      if enemy == None:
+        cls.choose_enemy()
+         
+      else:
+        cls.choose_enemy(enemy)
+        
     #Initialize combat effects
     cls.set_effects()
 
@@ -151,6 +160,9 @@ What Would You Like To Do?
         #Player attacking
         if player_choice == 'a':
           new_player.attack()
+          
+          if new_player.current_enemy.is_dead():
+            break
 
         #Player using items
         elif player_choice == 'u':
@@ -170,18 +182,15 @@ What Would You Like To Do?
       #Enemy's turn
       if not cls.is_players_turn:
         cls.is_players_turn = True
-        #Currently, enemies can only attack
-        new_player.current_enemy.attack()
+        new_player.current_enemy.choose_combat_action()
 
 
-    new_player.get_tired()
     cls.reset_combat()
+    
+    new_player.get_tired()
     
     if new_player.current_enemy.is_dead():
       new_player.current_enemy.drop_loot()
-
-
-
-class Encounters:
-  pass
-  
+    
+    if new_player.has_all_artifacts():
+      new_player.lock_location()

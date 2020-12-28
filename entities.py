@@ -3,7 +3,7 @@ import exploration
 import objects
 import operator
 import random as rdm
-from setting import all_artifacts, all_locations
+from setting import all_artifacts, all_locations, rune_of_daylight, primal_shard, azures_gauntlet
 from system import System, sleep, clear, sleep_and_clear
 
 
@@ -172,10 +172,27 @@ class Entity:
     if self.current_health > self.max_health:
       self.current_health = self.max_health
       
+    self.current_health = round(self.current_health)
+      
     clear()
-    print(f"{Colours.fg.cyan}{entity} regained {Colours.fg.red + Colours.underline}{percentage_to_heal}%{Colours.reset + Colours.fg.cyan} of {possessive_pronoun} {Colours.fg.green}health{Colours.fg.cyan}.")
+    print(f"{Colours.fg.cyan}{entity} {Colours.fg.cyan}regained {Colours.fg.red + Colours.underline}{percentage_to_heal}%{Colours.reset + Colours.fg.cyan} of {possessive_pronoun} {Colours.fg.green}health{Colours.fg.cyan}.")
     sleep_and_clear(2)
 
+
+  def take_damage(self, raw_damage, multiplier=1, armour_absorption=True):
+    defense = 1
+    if armour_absorption:
+      defense = self.armour.defense
+      
+    damage_taken = raw_damage * defense
+    damage_taken *= multiplier
+    
+    damage_taken = round(damage_taken)
+    
+    self.current_health -= damage_taken
+
+    return damage_taken
+  
 
   is_dead = lambda self: self.current_health <= 0
 
@@ -190,58 +207,62 @@ class TemporaryEnemy(Entity):
 
 
 class Player(Entity):
-  #I didn't put all the attributes as parameters because it looks ugly, and because any instances created from this object will always have these default arguments
+  #I didn't put all the attributes as parameters because it looks ugly, and because any instances created from this class will always have these default arguments
   def __init__(self):
-    self.current_health = 100
-    self.max_health = 100
+    self.current_health = 200
+    self.max_health = 200
     self.armour = leather_tunic
     self.weapon = anduril
-    self.current_location = all_locations["vod"]
+    self.current_location = all_locations["gd"]
     self.gold_coins = 50
 
-    self.artifacts_collected = []
+    self.artifacts_collected = all_artifacts
     self.artifacts_not_collected = list(all_artifacts)
-    self.num_of_artifacts_collected = len(self.artifacts_collected)
     self.total_artifacts = len(all_artifacts)
 
     self.is_tired = [False, False, False]
+    self.can_travel = True
   
     #Combat variables
     self.current_enemy = TemporaryEnemy
     self.has_escaped = None
-    self.items_used = { "King's Elixir" : 0,
-                        "Dragon's Amulet" : 0
-    }
+    self.items_used = {}
   
     self.attributes = vars(self)
 
 
   def travel(self):
-    player_choice = ''
-    locations_copy = all_locations.copy()
-    del locations_copy['gd']
+    if self.can_travel:
+      player_choice = ''
+      locations_copy = all_locations.copy()
+      del locations_copy['gd']
 
-    while player_choice not in locations_copy and player_choice != 'back':
+      while player_choice not in locations_copy and player_choice != 'back':
+        clear()
+        print(f"{Colours.fg.orange}Where Would You Like To Travel?" + '\n')
+
+        for key in locations_copy:
+          location = all_locations[key]
+
+          if location != self.current_location:
+            print(f"{Colours.fg.green + Colours.underline}[{key}]{Colours.reset}{location.colour} {location.name}")
+
+        print('\n' + f'{Colours.tag("back")} {Colours.reset + Colours.fg.orange} Go Back' + '\n')
+        player_choice = input(f"{Colours.fg.orange}> ")
+
+
+      if player_choice in all_locations:
+        self.current_location = all_locations[player_choice]
+        clear()
+        print(f"{Colours.fg.orange}You travelled to {self.current_location.colour + Colours.underline + Colours.bold}{self.current_location.name}{Colours.reset + Colours.fg.orange}.")
+        sleep_and_clear(2)
+      
+      
+    else:
       clear()
-      print(f"{Colours.fg.orange}Where Would You Like To Travel?" + '\n')
-
-      for key in locations_copy:
-        location = all_locations[key]
-
-        if location != self.current_location:
-          print(f"{Colours.fg.green + Colours.underline}[{key}]{Colours.reset}{location.colour} {location.name}")
-
-      print('\n' + f"{Colours.fg.green + Colours.underline}[back]{Colours.reset + Colours.fg.yellow} Go Back" + '\n')
-      player_choice = input(f"{Colours.fg.orange}> ")
-
-
-    if player_choice in all_locations:
-      self.current_location = all_locations[player_choice]
-
-      clear()
-      print(f"{Colours.fg.orange}You travelled to {self.current_location.colour + Colours.underline + Colours.bold}{self.current_location.name}{Colours.reset + Colours.fg.orange}.")
-
-      sleep_and_clear(2)
+      print(f"{Colours.fg.orange}You are not allowed to travel anymore because you have arrived at the Final Boss' location. {Colours.fg.red + Colours.bold}Prepare to fight him.{Colours.reset}")
+      sleep_and_clear(4)
+    
 
 
   def open_artipedia(self):
@@ -339,20 +360,21 @@ class Player(Entity):
       sleep_and_clear(1.5)
 
     else:
-      player_attack_damage = self.weapon.damage
-      damage_taken = round(rdm.randint(player_attack_damage[0], player_attack_damage[1]) * self.current_enemy.armour.defense)
+      multiplier = 1
+      damage_range = self.weapon.damage
+      raw_damage = rdm.randint(damage_range[0], damage_range[1])
 
       rdm_int = rdm.randint(1, self.weapon.crit_chance)
 
       if rdm_int == 1:
         print(f"{Colours.fg.orange + Colours.bold + Colours.underline}It's a critical hit!!!{Colours.reset}")
-        damage_taken = damage_taken * 2
+        multiplier *= 2
         sleep_and_clear(1)
   
   
-      self.current_enemy.current_health -= damage_taken
+      damage_dealt = self.current_enemy.take_damage(raw_damage, multiplier)
       
-      print(f"{Colours.fg.cyan}You attacked {self.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_taken} damage{Colours.fg.cyan}.")
+      print(f"{Colours.fg.cyan}You attacked {self.current_enemy.name_string} {Colours.fg.cyan} and dealt {Colours.fg.orange}{damage_dealt} damage{Colours.fg.cyan}.")
       sleep_and_clear(1.5)
 
 
@@ -372,15 +394,21 @@ class Player(Entity):
     sleep_and_clear(2)
 
 
-  @staticmethod
-  def ask_for_help():
-    pass
+  def lock_location(self, location="gd"):
+    location = all_locations[location]
+    
+    self.current_location = location
+    self.can_travel = False
 
 
   @staticmethod
   def display_death_message():
     print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
-      
+    
+    
+  has_all_artifacts = lambda self: len(self.artifacts_collected) == self.total_artifacts
+  
+  check_artifacts_amount = lambda self: len(self.artifacts_collected)
 
 
 new_player = Player()
@@ -401,6 +429,27 @@ class Enemy(Entity):
     self.attributes = vars(self)
 
 
+  def choose_combat_action(self):
+    #Boss
+    if isinstance(self, Boss):
+      rdm_int = rdm.randint(1, 100)
+      
+      if rdm_int in self.attacking_chance:
+        self.attack()
+
+      else:
+        if self.current_health <= System.calculate_percentage(total=self.max_health, percentage=50) and self.has_healed == False:
+          self.heal(50)
+          self.has_healed = True
+
+        else:
+          self.stun()
+          
+    #Normal Enemy
+    else:
+      self.attack()
+
+
   def attack(self):
     clear()
     rdm_int = rdm.randint(1, self.weapon.accuracy)
@@ -415,12 +464,12 @@ class Enemy(Entity):
 
     #Enemy hit its attack
     else:
-      enemy_attack_damage = self.weapon.damage
-      damage_taken = round(rdm.randint(enemy_attack_damage[0], enemy_attack_damage[1]) * new_player.armour.defense)
+      damage_range = self.weapon.damage
+      raw_damage = rdm.randint(damage_range[0], damage_range[1])
 
-      new_player.current_health -= damage_taken
+      damage_dealt = new_player.take_damage(raw_damage)
 
-      print(f"{self.name_string + Colours.fg.cyan} attacked you, and dealt{Colours.fg.orange} {damage_taken} damage{Colours.fg.cyan}.")
+      print(f"{self.name_string + Colours.fg.cyan} attacked you, and dealt{Colours.fg.orange} {damage_dealt} damage{Colours.fg.cyan}.")
 
     sleep_and_clear(1.5)
 
@@ -469,7 +518,7 @@ class Enemy(Entity):
     print(f"{Colours.fg.green}You defeated {new_player.current_enemy.name_string}{Colours.fg.green}!!!")
     sleep_and_clear(2)
 
-    if not self is artifact_keeper:
+    if not self is artifact_keeper and not self is talgrog_the_giant:
       rdm_int = rdm.randint(1, 100)
 
       #drop gold coins
@@ -492,7 +541,7 @@ class Enemy(Entity):
 
 
     #drop artifact
-    else:
+    elif self is artifact_keeper:
       filtered_artifacts = list(filter(lambda artifact: artifact.location is new_player.current_location, all_artifacts))
       
       artifact_to_add = filtered_artifacts[0]
@@ -523,7 +572,8 @@ night_hunter = Enemy("Night Hunter", 100, darkmail, rusty_sword, ["im"], (121, 1
 kavauri = Enemy("Kavauri", 150, darkmail, rusty_sword, ["im"], (191, 201))
 
 #Artifact Keeper can spawn in any location
-artifact_keeper = Enemy("Artifact Keeper", 150, darkmail, rusty_sword, ["vod", "fof", "im"], (191, 201))
+artifact_keeper = Enemy("Artifact Keeper", 15, darkmail, rusty_sword, ["vod", "fof", "im"], (191, 201))
+
 
 all_enemies = { "goblin" : goblin,
                 "bandit" : bandit,
@@ -542,20 +592,34 @@ all_enemies = { "goblin" : goblin,
 }
 
 
+class Boss(Enemy):
+  def __init__(self, name, max_health, armour, weapon):
+    self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
+    self.max_health = max_health
+    self.armour = armour
+    self.weapon = weapon
+    self.attacking_chance = range(1, 81)
 
-class Boss(Entity):
-    def __init__(self, name, max_health, armour, weapon, abilities):
-      self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
-      self.max_health = max_health
-      self.armour = armour
-      self.weapon = weapon
-      self.abilities = abilities
+    self.has_healed = False
 
-      self.attributes = vars(self)
+    self.attributes = vars(self)
 
 
+  def stun(self):
+    raw_damage = int(System.calculate_percentage(total=new_player.max_health, percentage=5))
+    
+    new_player.take_damage(raw_damage, armour_absorption=False)
 
-talgrog_the_giant = Boss("Talgrog The Giant", 200, darkmail, doomsblade, [])
+    clear()
+    print(f"{self.name_string}{Colours.fg.orange} stunned you for {Colours.fg.red}{raw_damage}{Colours.fg.orange} damage.")
+    print(f"{self.name_string}{Colours.fg.lightblue} gained an extra turn.")
+    sleep_and_clear(2)
+
+    self.attack()
+
+
+
+talgrog_the_giant = Boss("Talgrog The Giant", 200, darkmail, doomsblade)
 
 
 #Colour mess, need dict of valid_inputs
@@ -579,7 +643,7 @@ Your Weapon:{Colours.reset} {new_player.weapon.name_string}{Colours.reset}
 {gold_colour}
 Gold Coins:{Colours.reset + Colours.fg.yellow} {new_player.gold_coins}{Colours.reset}
 {headings_colour}
-Artifacts Collected:{Colours.reset + Colours.fg.orange} {new_player.num_of_artifacts_collected} / {new_player.total_artifacts}
+Artifacts Collected:{Colours.reset + Colours.fg.orange} {new_player.check_artifacts_amount()} / {new_player.total_artifacts}
 {headings_colour}
 {Colours.reset + Colours.fg.orange + Colours.underline}
 Things You Can Do:
