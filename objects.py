@@ -66,7 +66,6 @@ class Item(Object):
 
            
 
-
 vial_of_healing = Item("Vial of Healing", price=25, increases={"current_health" : 25})
 
 flask_of_healing = Item("Flask of Healing", price=25, increases={"current_health" : 50})
@@ -191,19 +190,19 @@ class PlayerInventory:
 
 
   @classmethod
-  def item_to_add_is_in_inventory(cls, item_to_look_for):
-    item_has_been_found = False
+  def item_exists(cls, target_item):
+    item_found = False
     
     for key in cls.items_dict:
-      if item_to_look_for == cls.items_dict[key][0]:
-        item_has_been_found = True
+      if target_item is cls.items_dict[key][0]:
+        item_found = True
         break
       
-    return item_has_been_found
+    return item_found
 
 
   @classmethod
-  def inventory_has_empty_slot(cls):
+  def empty_slot_exists(cls):
     empty_slot_found = False
     
     for key in cls.items_dict:
@@ -219,13 +218,13 @@ class PlayerInventory:
   def add_item(cls, item_key, quantity=1):
     item_to_add = all_items[item_key]
 
-    if cls.item_to_add_is_in_inventory(item_to_add):
+    if cls.item_exists(item_to_add):
       for key in cls.items_dict:
         if cls.items_dict[key][0] == item_to_add:
           cls.items_dict[key][1] += quantity
 
     else:
-      if cls.inventory_has_empty_slot():
+      if cls.empty_slot_exists():
         cls.items_dict[cls.empty_slot_key] = [item_to_add, quantity]
 
       else:
@@ -266,14 +265,21 @@ class PlayerInventory:
 
 
   @classmethod
-  def remove_item(cls, item_slot):
-    item_quantity = cls.items_dict[item_slot][1]
+  def remove_item(cls, item_slot=None, mode=1):
+    #Remove one item from one slot
+    if mode == 1:
+      item_quantity = cls.items_dict[item_slot][1]
     
-    if item_quantity > 1:
-      cls.items_dict[item_slot][1] -= 1
+      if item_quantity > 1:
+        cls.items_dict[item_slot][1] -= 1
       
+      else:
+        cls.items_dict[item_slot] = [None, 0]
+    
+    #Clear whole inventory
     else:
-      cls.items_dict[item_slot] = [None, 0]
+      for key in cls.items_dict:
+        cls.items_dict[key] = [None, 0]
 
 
   @classmethod
