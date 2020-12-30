@@ -9,7 +9,7 @@ Combat.start_combat(is_players_turn=True)
 #brrrrrrrrrrr
 
 
-# Storyline.play_intro_storyline()
+# Storyline.play_introduction()
 
 valid_inputs = ("ex", "slep", "trv", "inv", "shp", "art")
 

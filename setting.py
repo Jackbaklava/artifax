@@ -85,7 +85,7 @@ class Storyline:
 
 
   @classmethod
-  def play_intro_storyline(cls):
+  def play_introduction(cls):
     cls.print_description("It's a lazy Sunday evening and you're playing video games on your PS1, when suddenly your game starts to glitch.")
 
     you.speak("Why is the game not working?")
