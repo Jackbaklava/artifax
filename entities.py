@@ -209,14 +209,15 @@ class TemporaryEnemy(Entity):
 class Player(Entity):
   #I didn't put all the attributes as parameters because it looks ugly, and because any instances created from this class will always have these default arguments
   def __init__(self):
+    self.main_menu_choice = None
     self.current_health = 200
     self.max_health = 200
     self.armour = leather_tunic
     self.weapon = anduril
-    self.current_location = all_locations["gd"]
+    self.current_location = all_locations["vod"]
     self.gold_coins = 50
 
-    self.artifacts_collected = all_artifacts
+    self.artifacts_collected = []
     self.artifacts_not_collected = list(all_artifacts)
     self.total_artifacts = len(all_artifacts)
 
@@ -245,7 +246,7 @@ class Player(Entity):
           location = all_locations[key]
 
           if location != self.current_location:
-            print(f"{Colours.fg.green + Colours.underline}[{key}]{Colours.reset}{location.colour} {location.name}")
+            print(f"{Colours.tag(key)} {location.name_string}")
 
         print('\n' + f'{Colours.tag("back")} {Colours.reset + Colours.fg.orange} Go Back' + '\n')
         player_choice = input(f"{Colours.fg.orange}> ")
@@ -254,7 +255,7 @@ class Player(Entity):
       if player_choice in all_locations:
         self.current_location = all_locations[player_choice]
         clear()
-        print(f"{Colours.fg.orange}You travelled to {self.current_location.colour + Colours.underline + Colours.bold}{self.current_location.name}{Colours.reset + Colours.fg.orange}.")
+        print(f"{Colours.fg.orange}You travelled to {self.current_location.name_string}{Colours.fg.orange}.")
         sleep_and_clear(2)
       
       
@@ -592,6 +593,7 @@ all_enemies = { "goblin" : goblin,
 }
 
 
+
 class Boss(Enemy):
   def __init__(self, name, max_health, armour, weapon):
     self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
@@ -620,40 +622,3 @@ class Boss(Enemy):
 
 
 talgrog_the_giant = Boss("Talgrog The Giant", 200, darkmail, doomsblade)
-
-
-#Colour mess, need dict of valid_inputs
-def display_user_interface():
-  headings_colour = Colours.fg.red + Colours.underline
-  gold_colour = Colours.fg.yellow + Colours.underline
-  tags_explanation_colour = Colours.reset + Colours.fg.yellow
-  ask_for_choice_colour = Colours.fg.orange
-
-  clear()
-  System.print_title('ARTIFAX')
-
-  print(
-f"""{headings_colour}Your Health:{Colours.reset}{Colours.fg.green} {new_player.current_health} / {new_player.max_health} {Colours.reset}
-{headings_colour}
-Your Location:{Colours.reset + Colours.fg.orange} {new_player.current_location.name}{Colours.reset}
-{headings_colour}
-Your Armour:{Colours.reset} {new_player.armour.name_string}{Colours.reset}
-{headings_colour}
-Your Weapon:{Colours.reset} {new_player.weapon.name_string}{Colours.reset}
-{gold_colour}
-Gold Coins:{Colours.reset + Colours.fg.yellow} {new_player.gold_coins}{Colours.reset}
-{headings_colour}
-Artifacts Collected:{Colours.reset + Colours.fg.orange} {new_player.check_artifacts_amount()} / {new_player.total_artifacts}
-{headings_colour}
-{Colours.reset + Colours.fg.orange + Colours.underline}
-Things You Can Do:
-{Colours.tag('ex')} {tags_explanation_colour}Explore The Wilderness
-{Colours.tag('slep')} {tags_explanation_colour}Sleep To Regenerate Your Health
-{Colours.tag('trv')} {tags_explanation_colour}Travel To A Different Location
-{Colours.tag('inv')} {tags_explanation_colour}Open Your Inventory
-{Colours.tag('shp')} {tags_explanation_colour}Open The Shop
-{Colours.tag('art')} {tags_explanation_colour}Open Artipedia{Colours.fg.lightblue + Colours.underline}
-
-[help]{Colours.reset + Colours.fg.red} What am I supposed to do?
-{ask_for_choice_colour + Colours.bold}
-What Would You Like To Do?{Colours.reset}""")

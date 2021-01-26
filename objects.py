@@ -442,7 +442,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
 
 
   @classmethod
-  def display_shop(cls):
+  def display_menu(cls):
     player_choice = ''
 
     while player_choice != "back":

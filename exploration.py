@@ -1,4 +1,5 @@
 from colours import Colours
+import game
 from objects import PlayerInventory, all_items, display_equipment_stats
 from entities import new_player, all_enemies, talgrog_the_giant
 from setting import all_artifacts, grimsden
@@ -9,7 +10,7 @@ import random as rdm
 
 class Combat:
   @staticmethod
-  def choose_enemy(enemy_chosen=None):
+  def choose_enemy(enemy_chosen):
     if enemy_chosen == None:
       rdm_int = rdm.randint(1, 200)
 
@@ -123,15 +124,10 @@ What Would You Like To Do?
   def start_combat(cls, enemy=None, is_players_turn=None):
     #Choose enemy
     if new_player.current_location is grimsden:
-        cls.choose_enemy(talgrog_the_giant)
-        
-    else:
-      if enemy == None:
-        cls.choose_enemy()
-         
-      else:
-        cls.choose_enemy(enemy)
-        
+      enemy = talgrog_the_giant
+      
+    cls.choose_enemy(enemy)
+
     #Initialize combat effects
     cls.set_effects()
 
@@ -143,6 +139,7 @@ What Would You Like To Do?
 
     while new_player.current_health > 0 and new_player.current_enemy.current_health > 0:
       clear()
+      game.GameState.save_account()
       cls.update_items_used()
 
       #Player's turn
@@ -177,7 +174,9 @@ What Would You Like To Do?
             break 
           elif not new_player.has_escaped:
             new_player.current_enemy.attack()
+      
 
+      game.GameState.save_account()
 
       #Enemy's turn
       if not cls.is_players_turn:
@@ -194,3 +193,5 @@ What Would You Like To Do?
     
     if new_player.has_all_artifacts():
       new_player.lock_location()
+
+    game.GameState.save_account()
