@@ -1,3 +1,4 @@
+#COMMIT_TO_GITHUB
 class Colours: 
   reset='\033[0m'
   underline='\033[04m' 
@@ -32,9 +33,14 @@ class Colours:
   equipment_colour = fg.lightblue
   attribute_colour = fg.yellow
   enemy_colour = fg.red + bold
+  
   tag_colour = fg.green + underline
-  
-  
   tag = lambda string: f"{Colours.tag_colour}[{string}]{Colours.reset}"
+
+  heading_colour = fg.red
+  heading = lambda string, colour=heading_colour: f"{colour + Colours.underline}{string}{Colours.reset}"
+
+  alert = lambda string: f"{Colours.fg.red + Colours.underline}{string}{Colours.reset}"
+
   none_string = f"{fg.cyan}- - - - - - - -"
   

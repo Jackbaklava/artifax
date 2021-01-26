@@ -1,11 +1,12 @@
 from colours import Colours
+import game
 from system import clear
 
 
 
 class Location:
   def __init__(self, name, colour, line_colour):
-    self.name = name
+    self.name_string = f"{colour}{name}"
     self.colour = colour
     self.line_colour = line_colour
 
@@ -104,7 +105,9 @@ class Storyline:
 
     old_man.speak("Welcome Player, to the world of Artifax!!!")
 
-    #Handle accounts
+
+    game.GameState.connect_account()
+
 
     you.speak("Woah! You mean I am in the game itself?! This is so cool!")
 
