@@ -32,7 +32,7 @@ class Artifact:
   def __init__(self, name, location):
     self.name_string = f"{Colours.fg.red}{name}"
     self.location = location
-    self.description = f"(Found in {self.location.name})"
+    self.description = f"(Found in {self.location.name_string})"
 
   
   def display_artifact(self):

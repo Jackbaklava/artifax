@@ -226,6 +226,8 @@ class Player(Entity):
   
     #Combat variables
     self.current_enemy = TemporaryEnemy
+    self.combat_choice = None
+    self.has_combat_turn = None
     self.has_escaped = None
     self.items_used = {}
   
@@ -400,11 +402,6 @@ class Player(Entity):
     
     self.current_location = location
     self.can_travel = False
-
-
-  @staticmethod
-  def display_death_message():
-    print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
     
     
   has_all_artifacts = lambda self: len(self.artifacts_collected) == self.total_artifacts

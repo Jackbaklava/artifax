@@ -252,12 +252,7 @@ class PlayerInventory:
             print(f"{Colours.fg.red + Colours.underline}Please enter a number from 1 to {cls.total_slots}.{Colours.reset}")
             sleep(2)
 
-
-        #Maybe tuple unpacking
-        cls.items_dict[player_choice][0] = item_to_add
-        cls.items_dict[player_choice][1] = quantity
-        x = 9
-
+        cls.items_dict[player_choice] = [item_to_add, quantity]
 
     clear()
     print(f"{Colours.fg.orange}You received {Colours.bold + Colours.fg.red}{quantity} {Colours.fg.green}{item_to_add.name}{Colours.reset + Colours.fg.orange}.")
@@ -277,7 +272,7 @@ class PlayerInventory:
         cls.items_dict[item_slot] = [None, 0]
     
     #Clear whole inventory
-    else:
+    elif mode == "all":
       for key in cls.items_dict:
         cls.items_dict[key] = [None, 0]
 

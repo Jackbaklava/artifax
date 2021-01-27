@@ -1,7 +1,7 @@
 from colours import Colours
+import objects
 import entities
 import exploration
-import objects
 import pickle
 from system import System, clear, sleep_and_clear
 
@@ -45,10 +45,21 @@ Things You Can Do:{Colours.reset}
 What Would You Like To Do?{Colours.reset}""")
 
 
+  @staticmethod
+  def display_death_message():
+    print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
+    input(f"{Colours.input_colour}")
+
+
+  @staticmethod
+  def display_win_message():
+    print(f"{Colours.fg.green + Colours.bold}Congratulation!!! You completed the game and successfully escaped from it.")
+    input(f"{Colours.input_colour}")
+
+
   @classmethod
   def play(cls):
     while not entities.new_player.is_dead() and not entities.new_player.current_enemy is entities.talgrog_the_giant:
-  
       if entities.new_player.main_menu_choice == None:
         cls.display_main_menu()
         entities.new_player.main_menu_choice = input(f"{Colours.input_colour}> ").lower().strip()
@@ -72,11 +83,19 @@ What Would You Like To Do?{Colours.reset}""")
       GameState.save_account()
     
 
-    #DONOTCOMMIT
+    if entities.new_player.current_enemy is entities.talgrog_the_giant:
+      exploration.Combat.start_combat()
+
     if entities.new_player.is_dead():
-      entities.new_player.display_death_message()
-    #DONOTCOMMIT
-    entities.new_player.check_for_win()
+      cls.display_death_message()
+      GameState.reset_account()
+
+    else:
+      cls.diplay_win_message()
+      GameState.reset_account()
+
+
+    GameState.save_account()
 
   
   
@@ -159,7 +178,7 @@ Which of the following would you like to do?
       #Exceptions
       if not (username, password) in cls.accounts_dict:
         clear()
-        print(f"{Colours.fg.red}Invalid username or password.")
+        print(f"{Colours.alert('Invalid username or password.')}")
         sleep_and_clear(2)
         
     cls.account = (username, password)
@@ -183,6 +202,12 @@ Which of the following would you like to do?
   
   @classmethod
   def reset_account(cls):
-    #Make new_player new instance of Player and reset PlayerInventory
+    clear()
+    print(f"{Colours.alert('Your account has now been resetted.')}")
+    input(f"{Colours.input_colour}")
+
+    entities.new_player = entities.Player()
+    objects.PlayerInventory.remove_item(mode="all")
+
     cls.save_account()
   
