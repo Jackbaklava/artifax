@@ -17,8 +17,11 @@ class Combat:
       #filters
       enemies_filtered_by_location = list(filter(lambda x: entities.new_player.current_location in entities.all_enemies[x].spawn_location, entities.all_enemies))
 
-      specific_enemy = list(filter(lambda x: rdm_int in entities.all_enemies[x].spawn_range, enemies_filtered_by_location))
+      print(enemies_filtered_by_location)
 
+      specific_enemy = list(filter(lambda x: rdm_int in entities.all_enemies[x].spawn_range, enemies_filtered_by_location))
+      
+      print(specific_enemy)
       
       if len(specific_enemy) > 1:
         artifact_needed = list(filter(lambda x: x.location is entities.new_player.current_location, all_artifacts))[0]
@@ -166,18 +169,21 @@ What Would You Like To Do?
         #Player attacking
         if entities.new_player.combat_choice == 'a':
           entities.new_player.attack()
+          entities.new_player.combat_choice = None
           
           if entities.new_player.current_enemy.is_dead():
             break
 
         #Player using items
         elif entities.new_player.combat_choice == 'u':
-          wants_to_use_item = objects.PlayerInventory.use_item()
-          entities.new_player.has_combat_turn = wants_to_use_item == False
+          player_used_item = objects.PlayerInventory.use_item()
+          entities.new_player.has_combat_turn = player_used_item == False
+          entities.new_player.combat_choice = None
 
         #Player escaping from combat
         elif entities.new_player.combat_choice == 'e':
           entities.new_player.escape_from_combat()
+          entities.new_player.combat_choice = None
 
           if entities.new_player.has_escaped:
             break 
@@ -190,10 +196,9 @@ What Would You Like To Do?
       #Enemy's turn
       if not entities.new_player.has_combat_turn:
         entities.new_player.has_combat_turn = True
+        entities.new_player.combat_choice = None
         entities.new_player.current_enemy.choose_combat_action()
 
-
-    cls.reset_combat()
     
     entities.new_player.get_tired()
     
@@ -202,5 +207,7 @@ What Would You Like To Do?
     
     if entities.new_player.has_all_artifacts():
       entities.new_player.lock_location()
+    
+    cls.reset_combat()
 
     game.GameState.save_account()

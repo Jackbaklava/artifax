@@ -10,7 +10,7 @@ class Game:
   main_menu_choices = { "ex" : exploration.Combat.start_combat,
                         "slp" : entities.new_player.sleep_for_health,
                         "trv" : entities.new_player.travel,
-                        "inv" : objects.PlayerInventory.display_items_dict,
+                        "bkp" : entities.new_player.open_backpack,
                         "shp" : objects.Shop.display_menu,
                         "art" : entities.new_player.open_artipedia
   }
@@ -36,7 +36,7 @@ Things You Can Do:{Colours.reset}
 {Colours.tag("ex")} {tags_explanation_colour}Explore The Wilderness
 {Colours.tag("slep")} {tags_explanation_colour}Sleep To Regenerate Your Health
 {Colours.tag("trv")} {tags_explanation_colour}Travel To A Different Location
-{Colours.tag("inv")} {tags_explanation_colour}Open Your Inventory
+{Colours.tag("bkp")} {tags_explanation_colour}Open Your Backpack
 {Colours.tag("shp")} {tags_explanation_colour}Open The Shop
 {Colours.tag("art")} {tags_explanation_colour}Open Artipedia
 
@@ -67,11 +67,7 @@ What Would You Like To Do?{Colours.reset}""")
       GameState.save_account()
 
       try:
-        if entities.new_player.main_menu_choice == "inv":
-          cls.main_menu_choices[entities.new_player.main_menu_choice](clear_the_screen=True)
-          input(f"{Colours.fg.orange}> ")
-        else:
-          cls.main_menu_choices[entities.new_player.main_menu_choice]()
+        cls.main_menu_choices[entities.new_player.main_menu_choice]()
 
       except KeyError:
         clear()
@@ -143,9 +139,9 @@ Which of the following would you like to do?
       cls.get_accounts()
       clear()
       
-      chosen_username = input(f"{Colours.fg.orange}Username: ")
-      chosen_password = input(f"{Colours.fg.red}Password: ")
-      confirmed_password = input(f"{Colours.fg.red}Confirm Password: ")
+      chosen_username = input(f"{Colours.fg.orange}Username: ").strip()
+      chosen_password = input(f"{Colours.fg.red}Password: ").strip()
+      confirmed_password = input(f"{Colours.fg.red}Confirm Password: ").strip()
 
       #Exceptions
       #Everyone has unique accounts because username AND password are hashed to objects
@@ -167,19 +163,22 @@ Which of the following would you like to do?
   @classmethod
   def load_account(cls):
     username, password = None, None
-    while not (username, password) in cls.accounts_dict:
+    while True:
       #Getting accounts again if new account is made from another device during this while loop
       cls.get_accounts()
       clear()
       
-      username = input(f"{Colours.fg.orange}Username: ")
-      password = input(f"{Colours.fg.red}Password: ")
+      username = input(f"{Colours.fg.orange}Username: ").strip()
+      password = input(f"{Colours.fg.red}Password: ").strip()
       
       #Exceptions
       if not (username, password) in cls.accounts_dict:
         clear()
         print(f"{Colours.alert('Invalid username or password.')}")
         sleep_and_clear(2)
+        
+      else:
+        break
         
     cls.account = (username, password)
     
