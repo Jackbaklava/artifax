@@ -3,7 +3,7 @@ import exploration
 import objects
 import operator
 import random as rdm
-from setting import all_artifacts, all_locations, rune_of_daylight, primal_shard, azures_gauntlet
+import setting
 from system import System, sleep, clear, sleep_and_clear
 
 
@@ -214,12 +214,12 @@ class Player(Entity):
     self.max_health = 200
     self.armour = leather_tunic
     self.weapon = anduril
-    self.current_location = all_locations["vod"]
+    self.current_location = setting.all_locations["vod"]
     self.gold_coins = 50
 
     self.artifacts_collected = []
-    self.artifacts_not_collected = list(all_artifacts)
-    self.total_artifacts = len(all_artifacts)
+    self.artifacts_not_collected = list(setting.all_artifacts)
+    self.total_artifacts = len(setting.all_artifacts)
 
     self.is_tired = [False, False, False]
     self.can_travel = True
@@ -237,7 +237,7 @@ class Player(Entity):
   def travel(self):
     if self.can_travel:
       player_choice = ''
-      locations_copy = all_locations.copy()
+      locations_copy = setting.all_locations.copy()
       del locations_copy['gd']
 
       while player_choice not in locations_copy and player_choice != 'back':
@@ -245,17 +245,16 @@ class Player(Entity):
         print(f"{Colours.fg.orange}Where Would You Like To Travel?" + '\n')
 
         for key in locations_copy:
-          location = all_locations[key]
+          location = setting.all_locations[key]
 
           if location != self.current_location:
             print(f"{Colours.tag(key)} {location.name_string}")
 
-        print('\n' + f'{Colours.tag("back")} {Colours.reset + Colours.fg.orange} Go Back' + '\n')
+        print('\n' + f"{Colours.tag('back')} {Colours.fg.orange}Go Back" + '\n')
         player_choice = input(f"{Colours.fg.orange}> ")
 
-
-      if player_choice in all_locations:
-        self.current_location = all_locations[player_choice]
+      if player_choice in setting.all_locations:
+        self.current_location = setting.all_locations[player_choice]
         clear()
         print(f"{Colours.fg.orange}You travelled to {self.current_location.name_string}{Colours.fg.orange}.")
         sleep_and_clear(2)
@@ -266,6 +265,14 @@ class Player(Entity):
       print(f"{Colours.fg.orange}You are not allowed to travel anymore because you have arrived at the Final Boss' location. {Colours.fg.red + Colours.bold}Prepare to fight him.{Colours.reset}")
       sleep_and_clear(4)
     
+
+  def open_backpack(self):
+    objects.PlayerInventory.display_items_dict(clear_the_screen=True)
+    objects.display_current_equipment_stats("weapon")
+    objects.display_current_equipment_stats("armour")
+
+    print('\n')
+    input(f"{Colours.input_colour}> ")
 
 
   def open_artipedia(self):
@@ -398,7 +405,7 @@ class Player(Entity):
 
 
   def lock_location(self, location="gd"):
-    location = all_locations[location]
+    location = setting.all_locations[location]
     
     self.current_location = location
     self.can_travel = False
@@ -420,7 +427,7 @@ class Enemy(Entity):
     self.armour = armour
     self.weapon = weapon
     
-    self.spawn_location = list(map(lambda key: all_locations[key], spawn_location))
+    self.spawn_location = list(map(lambda key: setting.all_locations[key], spawn_location))
     self.spawn_range = range(spawn_range[0], spawn_range[1])
     
     self.gold_coins_drop = gold_coins_drop
@@ -540,7 +547,7 @@ class Enemy(Entity):
 
     #drop artifact
     elif self is artifact_keeper:
-      filtered_artifacts = list(filter(lambda artifact: artifact.location is new_player.current_location, all_artifacts))
+      filtered_artifacts = list(filter(lambda artifact: artifact.location is new_player.current_location, setting.all_artifacts))
       
       artifact_to_add = filtered_artifacts[0]
       new_player.artifacts_collected.append(artifact_to_add)

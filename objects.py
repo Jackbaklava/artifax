@@ -1,5 +1,5 @@
 from colours import Colours
-from entities import  new_player, Weapon, Armour, all_player_weapons, all_player_armour
+import entities
 from system import System, clear, sleep, sleep_and_clear
 
 
@@ -84,7 +84,7 @@ all_items = { "vlohg" : vial_of_healing,
 
 def display_equipment_stats(key,  display_price=True, display_name=True, item_quantity='', extra_text=None):
   #jUST MAKE A COLLECTION!!!
-  if key in all_player_weapons or key in all_player_armour or key in all_items or key in PlayerInventory.items_dict:
+  if key in entities.all_player_weapons or key in entities.all_player_armour or key in all_items or key in PlayerInventory.items_dict:
     key_to_display = Colours.tag(key) + ' '
     space_to_display = System.indent(key)
 
@@ -94,11 +94,11 @@ def display_equipment_stats(key,  display_price=True, display_name=True, item_qu
     specific_equipment = key
 
 
-  if key in all_player_weapons:
-    specific_equipment = all_player_weapons[key]
+  if key in entities.all_player_weapons:
+    specific_equipment = entities.all_player_weapons[key]
 
-  elif key in all_player_armour:
-    specific_equipment = all_player_armour[key]
+  elif key in entities.all_player_armour:
+    specific_equipment = entities.all_player_armour[key]
 
   elif key in all_items:
     specific_equipment = all_items[key]
@@ -122,14 +122,14 @@ def display_equipment_stats(key,  display_price=True, display_name=True, item_qu
     item_quantity = str(item_quantity) + ' '
 
 
-  if isinstance(specific_equipment, Weapon):
+  if isinstance(specific_equipment, entities.Weapon):
     print(f"""{key_to_display}{name_to_display}
 {space_to_display}{Colours.fg.red}Damage: {specific_equipment.str_damage}
 {space_to_display}{Colours.fg.orange}Crit Chance: {specific_equipment.str_crit_chance}
 {space_to_display}{Colours.fg.cyan}Accuracy: {specific_equipment.str_accuracy}
 {price_string}""")
 
-  elif isinstance(specific_equipment, Armour):
+  elif isinstance(specific_equipment, entities.Armour):
     print(f"""{key_to_display}{name_to_display}
 {space_to_display}{Colours.fg.red}Defense: {specific_equipment.str_defense}
 {space_to_display}{Colours.fg.cyan}Weight: {specific_equipment.weight}
@@ -155,10 +155,10 @@ def display_current_equipment_stats(category):
   print(f"{Colours.fg.green + Colours.underline}Your {category.capitalize()}:{Colours.reset}")
 
   if category == "weapon":
-    display_equipment_stats(new_player.weapon, display_price=False)
+    display_equipment_stats(entities.new_player.weapon, display_price=False)
       
   elif category == "armour":
-    display_equipment_stats(new_player.armour, display_price=False)
+    display_equipment_stats(entities.new_player.armour, display_price=False)
 
   System.print_one_liner(f"{Colours.fg.blue}-")
 
@@ -279,9 +279,9 @@ class PlayerInventory:
 
   @classmethod
   def use_item(cls):
-    player_choice = ''
+    item_to_use = ''
 
-    while player_choice not in cls.items_dict and player_choice != "back":
+    while not item_to_use in cls.items_dict and item_to_use != "back":
       clear()
       print(f"""{Colours.fg.orange}Which item would you like to use?
 {Colours.fg.lightblue}(Type the inventory slot number of the item you want to use)
@@ -289,30 +289,31 @@ class PlayerInventory:
 
 """)
       cls.display_items_dict(clear_the_screen=False)
-      player_choice = input(f"{Colours.input_colour}> ").lower().strip()
+      item_to_use = input(f"{Colours.input_colour}> ").lower().strip()
+    
 
-    if player_choice != "back" and cls.items_dict[player_choice] != [None, 0]:
-      item_to_use = cls.items_dict[player_choice][0]
-      
+    if item_to_use != "back" and cls.items_dict[item_to_use] != [None, 0]:
+      item_to_use = cls.items_dict[item_to_use][0]
+
       #Applying item effects to player
-      new_player.apply_item_effects("Increase", item_to_use.increases)
+      entities.new_player.apply_item_effects("Increase", item_to_use.increases)
 
       #Applying item effects to enemy
-      new_player.current_enemy.apply_item_effects("Decrease", item_to_use.decreases)
+      entities.new_player.current_enemy.apply_item_effects("Decrease", item_to_use.decreases)
 
      
       #Incrementing turns
-      new_player.items_used[item_to_use.name] = item_to_use.affected_turns
+      entities.new_player.items_used[item_to_use.name] = item_to_use.affected_turns
       
       clear()
       print(f"{Colours.fg.orange}You used {item_to_use.name_string}{Colours.fg.orange}.")
       sleep_and_clear(2)
 
 
-    return player_choice in cls.items_dict and cls.items_dict[player_choice] != [None, 0]
+    return item_to_use in cls.items_dict and cls.items_dict[item_to_use] != [None, 0]
 
-    if player_choice != "back":
-      cls.remove_item(player_choice)
+    if item_to_use != "back":
+      cls.remove_item(item_to_use)
 
 
 
@@ -324,7 +325,7 @@ class Shop:
 {Colours.fg.cyan}(Type the {Colours.fg.green}green letters {Colours.fg.cyan}in square brackets according to the {category} you want to buy)
 (Type '{Colours.fg.red}back{Colours.fg.cyan}' to go back){Colours.fg.yellow}
 
-{f"{Colours.fg.yellow + Colours.underline}You have {new_player.gold_coins} gold coins{Colours.reset + Colours.fg.yellow}".center(130, "|")}
+{f"{Colours.fg.yellow + Colours.underline}You have {entities.new_player.gold_coins} gold coins{Colours.reset + Colours.fg.yellow}".center(130, "|")}
 """)#need to make this better
 
 
@@ -369,21 +370,21 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
   @classmethod
   def handle_money(cls):
     clear()
-    if new_player.gold_coins >= cls.total_price:
-      if isinstance(cls.equipment_to_purchase, Weapon) or isinstance(cls.equipment_to_purchase, Armour):
+    if entities.new_player.gold_coins >= cls.total_price:
+      if isinstance(cls.equipment_to_purchase, entities.Weapon) or isinstance(cls.equipment_to_purchase, entities.Armour):
         print(f"{Colours.fg.pink}You bought {Colours.fg.orange + Colours.underline}{cls.equipment_to_purchase.name}{Colours.reset} {Colours.fg.pink}for {Colours.fg.yellow + Colours.underline}{cls.equipment_to_purchase.price} gold coins{Colours.reset + Colours.fg.pink}.")
         sleep(2)
 
-      if isinstance(cls.equipment_to_purchase, Weapon):
-        new_player.weapon = cls.equipment_to_purchase
+      if isinstance(cls.equipment_to_purchase, entities.Weapon):
+        entities.new_player.weapon = cls.equipment_to_purchase
 
-      elif isinstance(cls.equipment_to_purchase, Armour):
-        new_player.armour = cls.equipment_to_purchase
+      elif isinstance(cls.equipment_to_purchase, entities.Armour):
+        entities.new_player.armour = cls.equipment_to_purchase
 
       elif isinstance(cls.equipment_to_purchase, Item):
         PlayerInventory.add_item(cls.key_of_equipment_to_purchase, cls.equipment_quantity)
       
-      new_player.gold_coins -= cls.total_price
+      entities.new_player.gold_coins -= cls.total_price
 
     else:
       print(f"{Colours.fg.red + Colours.underline + Colours.bold}YOU DON'T HAVE ENOUGH GOLD COINS{Colours.reset}")
@@ -399,9 +400,9 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
     cls.has_made_purchase = False
 
     if category == "weapon":
-      cls.equipment_dict = all_player_weapons
+      cls.equipment_dict = entities.all_player_weapons
     elif category == "armour":
-      cls.equipment_dict = all_player_armour
+      cls.equipment_dict = entities.all_player_armour
     elif category == "item":
       cls.equipment_dict = all_items
 
@@ -441,7 +442,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
     player_choice = ''
 
     while player_choice != "back":
-      valid_inputs = ("weapon", "armour", "item", "back")
+      valid_inputs = ("weapon", "armour", "item")
       clear()
       System.print_title("SHOP")
 

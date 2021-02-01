@@ -87,23 +87,23 @@ class Storyline:
 
   @classmethod
   def play_introduction(cls):
-    cls.print_description("It's a lazy Sunday evening and you're playing video games on your PS1, when suddenly your game starts to glitch.")
+    #cls.print_description("It's a lazy Sunday evening and you're playing video games on your PS1, when suddenly your game starts to glitch.")
 
-    you.speak("Why is the game not working?")
+    #you.speak("Why is the game not working?")
 
-    cls.print_description("You try fixing the problem by kicking the console.")
+    #cls.print_description("You try fixing the problem by kicking the console.")
 
-    cls.print_alert("zoop")
+    #cls.print_alert("zoop")
 
-    cls.print_description("In the blink of an eye, the world fades away before you in a series of sudden flashes. Scared, you closed your eyes.")
+    #cls.print_description("In the blink of an eye, the world fades away before you in a series of sudden flashes. Scared, you closed your eyes.")
 
-    cls.print_description("When you open your eyes again, you seem to be in a land far away from reality.")
+    #cls.print_description("When you open your eyes again, you seem to be in a land far away from reality.")
 
-    you.speak("Where am I?")
+    #you.speak("Where am I?")
 
-    cls.print_description("You look around and notice an old man coming towards you.")
+    #cls.print_description("You look around and notice an old man coming towards you.")
 
-    old_man.speak("Welcome Player, to the world of Artifax!!!")
+    #old_man.speak("Welcome Player, to the world of Artifax!!!")
 
 
     game.GameState.connect_account()
@@ -111,26 +111,26 @@ class Storyline:
 
     you.speak("Woah! You mean I am in the game itself?! This is so cool!")
 
-    old_man.speak("Slow down, young man. This is unlike any game you might have played.")
+    #old_man.speak("Slow down, young man. This is unlike any game you might have played.")
 
-    you.speak("So what? I mean I can infinitely respawn. Right?")
+    #you.speak("So what? I mean I can infinitely respawn. Right?")
 
-    old_man.speak("Nope. You have one life only. And if you die here, you'll die in real life too.")
+    #old_man.speak("Nope. You have one life only. And if you die here, you'll die in real life too.")
 
-    you.speak("That sounds scary. So, how do I escape this game?")
+    #you.speak("That sounds scary. So, how do I escape this game?")
 
-    old_man.speak("Obviously you need to beat the game.")
+    #old_man.speak("Obviously you need to beat the game.")
 
-    you.speak("Ah right! That's a piece of cake. But how do I beat the game?")
+    #you.speak("Ah right! That's a piece of cake. But how do I beat the game?")
 
-    old_man.speak("It's simple. You need to save this world from the terror of Talgrog The Giant. However, if you try to defeat him in this world, you'll hardly make a scratch on him. Thus, you need to travel to the deadly plains of Grimsden and behead the beast before it leaves it's den.")
+    #old_man.speak("It's simple. You need to save this world from the terror of Talgrog The Giant. However, if you try to defeat him in this world, you'll hardly make a scratch on him. Thus, you need to travel to the deadly plains of Grimsden and behead the beast before it leaves it's den.")
 
-    you.speak("And how do I travel to Grimsden?")
+    #you.speak("And how do I travel to Grimsden?")
 
-    old_man.speak(f"Since Grimsden is located in the far corner of the universe, you can't travel there by foot. So, you first need to collect the {len(all_artifacts)} Artifacts of Power and make a portal to Grimsden. You can collect these artifacts by defeating the Artifact Keeper of every location you explore.")
+    #old_man.speak(f"Since Grimsden is located in the far corner of the universe, you can't travel there by foot. So, you first need to collect the {len(all_artifacts)} Artifacts of Power and make a portal to Grimsden. You can collect these artifacts by defeating the Artifact Keeper of every location you explore.")
 
-    you.speak("Woah! That's alot of stuff to do.")
+    #you.speak("Woah! That's alot of stuff to do.")
 
-    old_man.speak("Don't worry. To help you track your progress, I am giving you an Artipedia. In case you ever need my help, type 'help' in the main menu. Start your journey by exploring the wilderness. ")
+    #old_man.speak("Don't worry. To help you track your progress, I am giving you an Artipedia. In case you ever need my help, type 'help' in the main menu. Start your journey by exploring the wilderness. ")
 
     old_man.speak("Now go out there and save the world!!!")
