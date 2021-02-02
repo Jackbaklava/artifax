@@ -7,14 +7,40 @@ from system import System, clear, sleep_and_clear
 
 
 class Game:
-  main_menu_choices = { "ex" : exploration.Combat.start_combat,
+  @staticmethod
+  def eval_enemy():
+    start_combat = True
+    
+    if entities.new_player.has_all_artifacts():
+      valid_inputs = ('1', '2')
+      player_choice = ''
+      
+      while not player_choice in valid_inputs:
+        clear()
+        print(f"""{Colours.input_colour}
+You are about to fight the Game' Boss {entities.talgrog_the_giant.name_string} {Colours.input_colour}Are you sure you want to continue?
+
+{Colours.tag('1')} Yes, I am ready
+{Colours.tag('2')} No, I still need to do something 
+
+""")
+        player_choice = input(f"{Colours.input_colour}> ")
+      
+      if player_choice == "2":
+        start_combat = False
+        
+    if start_combat:
+       exploration.Combat.start_combat()
+
+
+  main_menu_choices = { "ex" : eval_enemy,
                         "slp" : entities.new_player.sleep_for_health,
                         "trv" : entities.new_player.travel,
                         "bkp" : entities.new_player.open_backpack,
                         "shp" : objects.Shop.display_menu,
                         "art" : entities.new_player.open_artipedia
   }
-
+  
 
   @staticmethod
   def display_main_menu():
@@ -96,6 +122,7 @@ What Would You Like To Do?{Colours.reset}""")
   
   
 class GameState:
+  logged_in = False
   #Accounts.pkl structure:
 
   #accounts_dict = {(username, password) : {"Player" : object,
@@ -117,7 +144,7 @@ class GameState:
     }
     player_choice = ''
     
-    while player_choice not in valid_inputs:
+    while not cls.logged_in:
       clear()
       print(f"""{Colours.fg.orange}
 Which of the following would you like to do?
@@ -128,62 +155,61 @@ Which of the following would you like to do?
 """)
       player_choice = input(f"{Colours.input_colour}> ")
       
-    valid_inputs[player_choice]()
+      if player_choice in valid_inputs:
+        valid_inputs[player_choice]()
 
   
   @classmethod
   def create_account(cls):
     chosen_username, chosen_password, confirmed_password = None, None, None
     
-    while (chosen_username, chosen_password) in cls.accounts_dict or chosen_password != confirmed_password:
-      cls.get_accounts()
-      clear()
+    cls.get_accounts()
+    clear()
       
-      chosen_username = input(f"{Colours.fg.orange}Username: ").strip()
-      chosen_password = input(f"{Colours.fg.red}Password: ").strip()
-      confirmed_password = input(f"{Colours.fg.red}Confirm Password: ").strip()
+    chosen_username = input(f"{Colours.fg.orange}Username: ").strip()
+    chosen_password = input(f"{Colours.fg.red}Password: ").strip()
+    confirmed_password = input(f"{Colours.fg.red}Confirm Password: ").strip()
 
-      #Exceptions
-      #Everyone has unique accounts because username AND password are hashed to objects
-      if (chosen_username, chosen_password) in cls.accounts_dict:
-        clear()
-        print(f"{Colours.fg.red}An account with the username '{chosen_username}' and password '{chosen_password}' already exists. Please Sign In.")
-        sleep_and_clear(2)
+    #Exceptions
+    #Everyone has unique accounts because username AND password are hashed to objects
+    if (chosen_username, chosen_password) in cls.accounts_dict:
+      clear()
+      print(f"{Colours.fg.red}An account with the username '{chosen_username}' and password '{chosen_password}' already exists. Please Sign In.")
+      sleep_and_clear(2)
         
-      elif chosen_password != confirmed_password:
-        clear()
-        print(f"{Colours.fg.red}Your password '{chosen_password}' doesn't match your confirmed password '{confirmed_password}'. Please try again.")
-        sleep_and_clear(2)
+    elif chosen_password != confirmed_password:
+      clear()
+      print(f"{Colours.fg.red}Your password '{chosen_password}' doesn't match your confirmed password '{confirmed_password}'. Please try again.")
+      sleep_and_clear(2)
    
-    cls.account = (chosen_username, chosen_password)
-
-    cls.save_account()
+   
+    if not (chosen_username, chosen_password) in cls.accounts_dict and chosen_password == confirmed_password:
+      cls.logged_in = True
+      cls.account = (chosen_username, chosen_password)
+      cls.save_account()
 
   
   @classmethod
   def load_account(cls):
     username, password = None, None
-    while True:
-      #Getting accounts again if new account is made from another device during this while loop
-      cls.get_accounts()
-      clear()
-      
-      username = input(f"{Colours.fg.orange}Username: ").strip()
-      password = input(f"{Colours.fg.red}Password: ").strip()
-      
-      #Exceptions
-      if not (username, password) in cls.accounts_dict:
-        clear()
-        print(f"{Colours.alert('Invalid username or password.')}")
-        sleep_and_clear(2)
-        
-      else:
-        break
-        
-    cls.account = (username, password)
     
-    entities.new_player = cls.accounts_dict[cls.account]["Player"]
-    objects.PlayerInventory = cls.accounts_dict[cls.account]["PlayerInventory"]
+    cls.get_accounts()
+    clear()
+      
+    username = input(f"{Colours.fg.orange}Username: ").strip()
+    password = input(f"{Colours.fg.red}Password: ").strip()
+      
+    #Exception
+    if not (username, password) in cls.accounts_dict:
+      clear()
+      print(f"{Colours.alert('Invalid username or password.')}")
+      sleep_and_clear(2)
+        
+    else:
+      cls.logged_in = True
+      cls.account = (username, password)
+      entities.new_player = cls.accounts_dict[cls.account]["Player"]
+      objects.PlayerInventory = cls.accounts_dict[cls.account]["PlayerInventory"]
 
   
   @classmethod
@@ -201,12 +227,12 @@ Which of the following would you like to do?
   
   @classmethod
   def reset_account(cls):
-    clear()
-    print(f"{Colours.alert('Your account has now been resetted.')}")
-    input(f"{Colours.input_colour}")
-
     entities.new_player = entities.Player()
     objects.PlayerInventory.remove_item(mode="all")
 
     cls.save_account()
+    
+    clear()
+    print(f"{Colours.alert('Your account has now been resetted.')}")
+    input(f"{Colours.input_colour}")
   
