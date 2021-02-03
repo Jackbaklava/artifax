@@ -17,11 +17,8 @@ class Combat:
       #filters
       enemies_filtered_by_location = list(filter(lambda x: entities.new_player.current_location in entities.all_enemies[x].spawn_location, entities.all_enemies))
 
-      print(enemies_filtered_by_location)
-
       specific_enemy = list(filter(lambda x: rdm_int in entities.all_enemies[x].spawn_range, enemies_filtered_by_location))
-      
-      print(specific_enemy)
+  
       
       if len(specific_enemy) > 1:
         artifact_needed = list(filter(lambda x: x.location is entities.new_player.current_location, all_artifacts))[0]
@@ -85,7 +82,12 @@ class Combat:
         cls.reset_item_effects(item_name)
 
     #Resetting enemy + turn + choice
-    entities.new_player.current_enemy = entities.TemporaryEnemy
+    if not entities.new_player.current_enemy is entities.talgrog_the_giant:
+      entities.new_player.current_enemy = entities.TemporaryEnemy
+    
+    else:
+      entities.new_player.has_won = True
+      
     entities.new_player.has_combat_turn = None
     entities.new_player.combat_choice = None
 

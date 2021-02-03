@@ -3,11 +3,12 @@ import objects
 import entities
 import exploration
 import pickle
+import setting
+import sys
 from system import System, clear, sleep_and_clear
 
 
 class Game:
-  @staticmethod
   def eval_enemy():
     start_combat = True
     
@@ -18,10 +19,10 @@ class Game:
       while not player_choice in valid_inputs:
         clear()
         print(f"""{Colours.input_colour}
-You are about to fight the Game' Boss {entities.talgrog_the_giant.name_string} {Colours.input_colour}Are you sure you want to continue?
+You are about to fight the Game's Boss {entities.talgrog_the_giant.name_string}{Colours.input_colour}. Are you sure you want to continue?
 
-{Colours.tag('1')} Yes, I am ready
-{Colours.tag('2')} No, I still need to do something 
+{Colours.tag('1')} {Colours.fg.lightblue}Yes, I am ready
+{Colours.tag('2')} {Colours.fg.lightblue}No, I still need to do something 
 
 """)
         player_choice = input(f"{Colours.input_colour}> ")
@@ -74,13 +75,13 @@ What Would You Like To Do?{Colours.reset}""")
   @staticmethod
   def display_death_message():
     print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
-    input(f"{Colours.input_colour}")
+    input(f"{Colours.input_colour}> ")
 
 
   @staticmethod
   def display_win_message():
-    print(f"{Colours.fg.green + Colours.bold}Congratulation!!! You completed the game and successfully escaped from it.")
-    input(f"{Colours.input_colour}")
+    print(f"{Colours.fg.green + Colours.bold}Congratulations!!! You completed the game and successfully escaped from it.")
+    input(f"{Colours.input_colour}> ")
 
 
   @classmethod
@@ -105,7 +106,7 @@ What Would You Like To Do?{Colours.reset}""")
       GameState.save_account()
     
 
-    if entities.new_player.current_enemy is entities.talgrog_the_giant:
+    if entities.new_player.current_enemy is entities.talgrog_the_giant and not entities.new_player.has_won:
       exploration.Combat.start_combat()
 
     if entities.new_player.is_dead():
@@ -113,7 +114,7 @@ What Would You Like To Do?{Colours.reset}""")
       GameState.reset_account()
 
     else:
-      cls.diplay_win_message()
+      cls.display_win_message()
       GameState.reset_account()
 
 
@@ -122,13 +123,21 @@ What Would You Like To Do?{Colours.reset}""")
   
   
 class GameState:
+  """
+  Accounts.pkl structure:
+  
+  accounts_dict = {(username, password) : {"Player" : object,
+                                           "PlayerInventory" : object,
+                                           "all_enemies" : object,
+                                           "all_locations" : object,
+                                           "all_items" : object
+                  }
+  }
+  """
+  
   logged_in = False
-  #Accounts.pkl structure:
-
-  #accounts_dict = {(username, password) : {"Player" : object,
-  #                                         "PlayerInventory" : object
-  #                }
-  #}
+  
+  
   @classmethod
   def get_accounts(cls):
     with open("accounts.pkl", "rb") as f:
@@ -174,7 +183,7 @@ Which of the following would you like to do?
     #Everyone has unique accounts because username AND password are hashed to objects
     if (chosen_username, chosen_password) in cls.accounts_dict:
       clear()
-      print(f"{Colours.fg.red}An account with the username '{chosen_username}' and password '{chosen_password}' already exists. Please Sign In.")
+      print(f"{Colours.fg.red}An account with the username '{chosen_username}' and password '{chosen_password}' already exists. Please Login.")
       sleep_and_clear(2)
         
     elif chosen_password != confirmed_password:
@@ -210,6 +219,9 @@ Which of the following would you like to do?
       cls.account = (username, password)
       entities.new_player = cls.accounts_dict[cls.account]["Player"]
       objects.PlayerInventory = cls.accounts_dict[cls.account]["PlayerInventory"]
+      entities.all_enemies = cls.accounts_dict[cls.account]["all_enemies"]
+      setting.all_locations = cls.accounts_dict[cls.account]["all_locations"]
+      objects.all_items = cls.accounts_dict[cls.account]["all_items"]
 
   
   @classmethod
@@ -220,6 +232,9 @@ Which of the following would you like to do?
     cls.accounts_dict[cls.account] = {}
     cls.accounts_dict[cls.account]["Player"] = entities.new_player
     cls.accounts_dict[cls.account]["PlayerInventory"] = objects.PlayerInventory
+    cls.accounts_dict[cls.account]["all_enemies"] = entities.all_enemies
+    cls.accounts_dict[cls.account]["all_locations"] = setting.all_locations
+    cls.accounts_dict[cls.account]["all_items"] = objects.all_items
     
     with open("accounts.pkl", "wb") as f:
       pickle.dump(cls.accounts_dict, f)
@@ -235,4 +250,13 @@ Which of the following would you like to do?
     clear()
     print(f"{Colours.alert('Your account has now been resetted.')}")
     input(f"{Colours.input_colour}")
-  
+    
+    
+  @staticmethod
+  def delete_all_accounts():
+    with open("accounts.pkl", "wb") as f:
+      pickle.dump({(None, None) : None}, f)
+      
+    #Intentional crash because this function is only for devs :)
+    sys.exit()
+    

@@ -1,9 +1,7 @@
-"""
-import pickle
-with open("accounts.pkl", "wb") as f:
-  pickle.dump({(None, None) : None}, f)
-int("j")
-"""
+
+#import game
+#game.GameState.delete_all_accounts()
+
 
 from game import Game
 from setting import Storyline

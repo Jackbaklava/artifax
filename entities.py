@@ -220,6 +220,7 @@ class Player(Entity):
     self.artifacts_collected = []
     self.artifacts_not_collected = list(setting.all_artifacts)
     self.total_artifacts = len(setting.all_artifacts)
+    self.has_won = False
 
     self.is_tired = [False, False, False]
     self.can_travel = True
