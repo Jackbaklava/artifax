@@ -178,7 +178,7 @@ What Would You Like To Do?
 
         #Player using items
         elif entities.new_player.combat_choice == 'u':
-          player_used_item = objects.PlayerInventory.use_item()
+          player_used_item = objects.new_inventory.use_item()
           entities.new_player.has_combat_turn = player_used_item == False
           entities.new_player.combat_choice = None
 

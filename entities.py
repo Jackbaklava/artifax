@@ -268,7 +268,7 @@ class Player(Entity):
     
 
   def open_backpack(self):
-    objects.PlayerInventory.display_items_dict(clear_the_screen=True)
+    objects.new_inventory.display_items_dict(clear_the_screen=True)
     objects.display_current_equipment_stats("weapon")
     objects.display_current_equipment_stats("armour")
 

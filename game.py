@@ -35,7 +35,7 @@ You are about to fight the Game's Boss {entities.talgrog_the_giant.name_string}{
 
 
   main_menu_choices = { "ex" : eval_enemy,
-                        "slp" : entities.new_player.sleep_for_health,
+                        "slep" : entities.new_player.sleep_for_health,
                         "trv" : entities.new_player.travel,
                         "bkp" : entities.new_player.open_backpack,
                         "shp" : objects.Shop.display_menu,
@@ -67,7 +67,6 @@ Things You Can Do:{Colours.reset}
 {Colours.tag("shp")} {tags_explanation_colour}Open The Shop
 {Colours.tag("art")} {tags_explanation_colour}Open Artipedia
 
-{Colours.tag("help")} {Colours.fg.red}What am I supposed to do?
 {Colours.input_colour + Colours.bold}
 What Would You Like To Do?{Colours.reset}""")
 
@@ -127,10 +126,9 @@ class GameState:
   Accounts.pkl structure:
   
   accounts_dict = {(username, password) : {"Player" : object,
-                                           "PlayerInventory" : object,
+                                           "new_inventory" : object,
                                            "all_enemies" : object,
                                            "all_locations" : object,
-                                           "all_items" : object
                   }
   }
   """
@@ -218,10 +216,9 @@ Which of the following would you like to do?
       cls.logged_in = True
       cls.account = (username, password)
       entities.new_player = cls.accounts_dict[cls.account]["Player"]
-      objects.PlayerInventory = cls.accounts_dict[cls.account]["PlayerInventory"]
+      objects.new_inventory = cls.accounts_dict[cls.account]["new_inventory"]
       entities.all_enemies = cls.accounts_dict[cls.account]["all_enemies"]
       setting.all_locations = cls.accounts_dict[cls.account]["all_locations"]
-      objects.all_items = cls.accounts_dict[cls.account]["all_items"]
 
   
   @classmethod
@@ -231,10 +228,9 @@ Which of the following would you like to do?
     
     cls.accounts_dict[cls.account] = {}
     cls.accounts_dict[cls.account]["Player"] = entities.new_player
-    cls.accounts_dict[cls.account]["PlayerInventory"] = objects.PlayerInventory
+    cls.accounts_dict[cls.account]["new_inventory"] = objects.new_inventory
     cls.accounts_dict[cls.account]["all_enemies"] = entities.all_enemies
     cls.accounts_dict[cls.account]["all_locations"] = setting.all_locations
-    cls.accounts_dict[cls.account]["all_items"] = objects.all_items
     
     with open("accounts.pkl", "wb") as f:
       pickle.dump(cls.accounts_dict, f)
@@ -243,7 +239,7 @@ Which of the following would you like to do?
   @classmethod
   def reset_account(cls):
     entities.new_player = entities.Player()
-    objects.PlayerInventory.remove_item(mode="all")
+    objects.new_inventory = objects.PlayerInventory()
 
     cls.save_account()
     

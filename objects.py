@@ -84,7 +84,7 @@ all_items = { "vlohg" : vial_of_healing,
 
 def display_equipment_stats(key,  display_price=True, display_name=True, item_quantity='', extra_text=None):
   #jUST MAKE A COLLECTION!!!
-  if key in entities.all_player_weapons or key in entities.all_player_armour or key in all_items or key in PlayerInventory.items_dict:
+  if key in entities.all_player_weapons or key in entities.all_player_armour or key in all_items or key in new_inventory.items_dict:
     key_to_display = Colours.tag(key) + ' '
     space_to_display = System.indent(key)
 
@@ -103,9 +103,9 @@ def display_equipment_stats(key,  display_price=True, display_name=True, item_qu
   elif key in all_items:
     specific_equipment = all_items[key]
 
-  elif key in PlayerInventory.items_dict:
-    specific_equipment = PlayerInventory.items_dict[key][0]
-    item_quantity = PlayerInventory.items_dict[key][1]
+  elif key in new_inventory.items_dict:
+    specific_equipment = new_inventory.items_dict[key][0]
+    item_quantity = new_inventory.items_dict[key][1]
 
 
   if display_price:
@@ -137,7 +137,7 @@ def display_equipment_stats(key,  display_price=True, display_name=True, item_qu
     
   elif isinstance(specific_equipment, Item):
     if display_name:
-      print(f"{key_to_display}{name_to_display}")
+      print(f"{key_to_display}{Colours.fg.red}{item_quantity}{name_to_display}")
     else:
       space_to_display = System.indent(extra_text)
     
@@ -165,67 +165,64 @@ def display_current_equipment_stats(category):
 
 
 class PlayerInventory:
-  items_dict = { '1' : [None, 0],
-                 '2' : [flask_of_healing, 1],
-                 '3' : [dragons_amulet, 23],
-                 '4' : [kings_elixir, 2],
-                 '5' : [None, 0]
-  }
-  total_slots = len(items_dict)
+  def __init__(self):
+    self.items_dict = { '1' : [None, 0],
+                        '2' : [flask_of_healing, 1],
+                        '3' : [dragons_amulet, 23],
+                        '4' : [kings_elixir, 2],
+                        '5' : [None, 0]
+    }
+    self.total_slots = len(self.items_dict)
 
 
-  @classmethod
-  def display_items_dict(cls, clear_the_screen):
+  def display_items_dict(self, clear_the_screen):
     if clear_the_screen:
       clear()
     else:
       sleep(1)
 
-    for key in cls.items_dict:
-      if cls.items_dict[key] == [None, 0]:
+    for key in self.items_dict:
+      if self.items_dict[key] == [None, 0]:
         print(f"{Colours.tag(key)} {Colours.none_string}")
         print('\n')
       else:
-        display_equipment_stats(key, display_price=False, item_quantity=cls.items_dict[key][1])
+        display_equipment_stats(key, display_price=False, item_quantity=self.items_dict[key][1])
 
 
-  @classmethod
-  def item_exists(cls, target_item):
+  def item_exists(self, target_item):
     item_found = False
     
-    for key in cls.items_dict:
-      if target_item is cls.items_dict[key][0]:
+    for key in self.items_dict:
+      if target_item is self.items_dict[key][0]:
         item_found = True
         break
       
     return item_found
 
 
-  @classmethod
-  def empty_slot_exists(cls):
+  def empty_slot_exists(self):
     empty_slot_found = False
     
-    for key in cls.items_dict:
-      if cls.items_dict[key] == [None, 0]:
+    for key in self.items_dict:
+      if self.items_dict[key] == [None, 0]:
         empty_slot_found = True
-        cls.empty_slot_key = key
+        self.empty_slot_key = key
         break
 
     return empty_slot_found
   
 
-  @classmethod
-  def add_item(cls, item_key, quantity=1):
+  def add_item(self, item_key, quantity=1):
     item_to_add = all_items[item_key]
 
-    if cls.item_exists(item_to_add):
-      for key in cls.items_dict:
-        if cls.items_dict[key][0] == item_to_add:
-          cls.items_dict[key][1] += quantity
+    if self.item_exists(item_to_add):
+      for key in self.items_dict:
+        if self.items_dict[key][0] == item_to_add:
+          self.items_dict[key][1] += quantity
 
     else:
-      if cls.empty_slot_exists():
-        cls.items_dict[cls.empty_slot_key] = [item_to_add, quantity]
+      if self.empty_slot_exists():
+        self.items_dict[self.empty_slot_key] = [item_to_add, quantity]
 
       else:
         player_choice = ''
@@ -233,67 +230,65 @@ class PlayerInventory:
         print(f"{Colours.fg.orange + Colours.bold + Colours.underline}Your inventory is currently full.{Colours.reset}")
         sleep(1.5)
 
-        while player_choice not in cls.items_dict:
+        while player_choice not in self.items_dict:
           clear()
           print(f"""{Colours.fg.red}Which item would you like to remove?   
-{Colours.reset + Colours.fg.cyan}(Type a number from  1 to {cls.total_slots}, according to the item number you want to replace){Colours.fg.yellow}
+{Colours.reset + Colours.fg.cyan}(Type a number from  1 to {self.total_slots}, according to the item number you want to replace){Colours.fg.yellow}
 
 {Colours.fg.orange + Colours.underline}Item you want to buy:
 """)
           display_equipment_stats(item_key, item_quantity=quantity)
           print('\n')
           
-          cls.display_items_dict(clear_the_screen=False)
+          self.display_items_dict(clear_the_screen=False)
           
           player_choice = input(f"{Colours.input_colour}> ")
 
-          if player_choice not in cls.items_dict:
+          if player_choice not in self.items_dict:
             clear()
-            print(f"{Colours.fg.red + Colours.underline}Please enter a number from 1 to {cls.total_slots}.{Colours.reset}")
+            print(f"{Colours.fg.red + Colours.underline}Please enter a number from 1 to {self.total_slots}.{Colours.reset}")
             sleep(2)
 
-        cls.items_dict[player_choice] = [item_to_add, quantity]
+        self.items_dict[player_choice] = [item_to_add, quantity]
 
     clear()
     print(f"{Colours.fg.orange}You received {Colours.bold + Colours.fg.red}{quantity} {Colours.fg.green}{item_to_add.name}{Colours.reset + Colours.fg.orange}.")
     sleep_and_clear(1.5)
 
 
-  @classmethod
-  def remove_item(cls, item_slot=None, mode=1):
+  def remove_item(self, item_slot=None, mode=1):
     #Remove one item from one slot
     if mode == 1:
-      item_quantity = cls.items_dict[item_slot][1]
+      item_quantity = self.items_dict[item_slot][1]
     
       if item_quantity > 1:
-        cls.items_dict[item_slot][1] -= 1
+        self.items_dict[item_slot][1] -= 1
       
       else:
-        cls.items_dict[item_slot] = [None, 0]
+        self.items_dict[item_slot] = [None, 0]
     
     #Clear whole inventory
     elif mode == "all":
-      for key in cls.items_dict:
-        cls.items_dict[key] = [None, 0]
+      for key in self.items_dict:
+        self.items_dict[key] = [None, 0]
 
 
-  @classmethod
-  def use_item(cls):
+  def use_item(self):
     item_to_use = ''
 
-    while not item_to_use in cls.items_dict and item_to_use != "back":
+    while not item_to_use in self.items_dict and item_to_use != "back":
       clear()
       print(f"""{Colours.fg.orange}Which item would you like to use?
 {Colours.fg.lightblue}(Type the inventory slot number of the item you want to use)
 {Colours.fg.cyan}(Type '{Colours.fg.green}back{Colours.fg.cyan}' to go back)
 
 """)
-      cls.display_items_dict(clear_the_screen=False)
+      self.display_items_dict(clear_the_screen=False)
       item_to_use = input(f"{Colours.input_colour}> ").lower().strip()
     
 
-    if item_to_use != "back" and cls.items_dict[item_to_use] != [None, 0]:
-      item_to_use = cls.items_dict[item_to_use][0]
+    if item_to_use != "back" and self.items_dict[item_to_use] != [None, 0]:
+      item_to_use = self.items_dict[item_to_use][0]
 
       #Applying item effects to player
       entities.new_player.apply_item_effects("Increase", item_to_use.increases)
@@ -310,10 +305,14 @@ class PlayerInventory:
       sleep_and_clear(2)
 
 
-    return item_to_use in cls.items_dict and cls.items_dict[item_to_use] != [None, 0]
+    return item_to_use in self.items_dict and self.items_dict[item_to_use] != [None, 0]
 
     if item_to_use != "back":
-      cls.remove_item(item_to_use)
+      self.remove_item(item_to_use)
+
+
+
+new_inventory = PlayerInventory()
 
 
 
@@ -382,7 +381,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
         entities.new_player.armour = cls.equipment_to_purchase
 
       elif isinstance(cls.equipment_to_purchase, Item):
-        PlayerInventory.add_item(cls.key_of_equipment_to_purchase, cls.equipment_quantity)
+        new_inventory.add_item(cls.key_of_equipment_to_purchase, cls.equipment_quantity)
       
       entities.new_player.gold_coins -= cls.total_price
 
