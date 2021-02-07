@@ -153,7 +153,12 @@ What Would You Like To Do?
     while entities.new_player.current_health > 0 and entities.new_player.current_enemy.current_health > 0:
       clear()
       game.GameState.save_account()
-      cls.update_items_used()
+      
+      #Only update item effects if enemy has attacked
+      if not entities.new_player.has_combat_turn:
+        entities.new_player.has_combat_turn = True
+        cls.update_items_used()
+
 
       #Player's turn
       if entities.new_player.has_combat_turn:
@@ -197,8 +202,7 @@ What Would You Like To Do?
 
       #Enemy's turn
       if not entities.new_player.has_combat_turn:
-        entities.new_player.has_combat_turn = True
-        entities.new_player.combat_choice = None
+        #entities.new_player.has_combat_turn = True
         entities.new_player.current_enemy.choose_combat_action()
 
     

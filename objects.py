@@ -256,27 +256,22 @@ class PlayerInventory:
     sleep_and_clear(1.5)
 
 
-  def remove_item(self, item_slot=None, mode=1):
-    #Remove one item from one slot
-    if mode == 1:
-      item_quantity = self.items_dict[item_slot][1]
+  def remove_item(self, item_slot=None):
+    item_quantity = self.items_dict[item_slot][1]
     
-      if item_quantity > 1:
-        self.items_dict[item_slot][1] -= 1
+    if item_quantity > 1:
+      self.items_dict[item_slot][1] -= 1
       
-      else:
-        self.items_dict[item_slot] = [None, 0]
+    else:
+      self.items_dict[item_slot] = [None, 0]
     
-    #Clear whole inventory
-    elif mode == "all":
-      for key in self.items_dict:
-        self.items_dict[key] = [None, 0]
 
 
   def use_item(self):
-    item_to_use = ''
+    player_choice = ''
+    player_used_item = False
 
-    while not item_to_use in self.items_dict and item_to_use != "back":
+    while not player_choice in self.items_dict and player_choice != "back":
       clear()
       print(f"""{Colours.fg.orange}Which item would you like to use?
 {Colours.fg.lightblue}(Type the inventory slot number of the item you want to use)
@@ -284,31 +279,35 @@ class PlayerInventory:
 
 """)
       self.display_items_dict(clear_the_screen=False)
-      item_to_use = input(f"{Colours.input_colour}> ").lower().strip()
+      player_choice = input(f"{Colours.input_colour}> ").lower().strip()
     
 
-    if item_to_use != "back" and self.items_dict[item_to_use] != [None, 0]:
-      item_to_use = self.items_dict[item_to_use][0]
+    if player_choice != "back" and self.items_dict[player_choice] != [None, 0]:
+      #Set to True
+      player_used_item = True
+      
+      #Get item object from inventory slot
+      item_object = self.items_dict[player_choice][0]
+      
+      #Remove item
+      self.remove_item(player_choice)
 
       #Applying item effects to player
-      entities.new_player.apply_item_effects("Increase", item_to_use.increases)
+      entities.new_player.apply_item_effects("Increase", item_object.increases)
 
       #Applying item effects to enemy
-      entities.new_player.current_enemy.apply_item_effects("Decrease", item_to_use.decreases)
+      entities.new_player.current_enemy.apply_item_effects("Decrease", item_object.decreases)
 
-     
       #Incrementing turns
-      entities.new_player.items_used[item_to_use.name] = item_to_use.affected_turns
+      entities.new_player.items_used[item_object.name] = item_object.affected_turns
       
       clear()
-      print(f"{Colours.fg.orange}You used {item_to_use.name_string}{Colours.fg.orange}.")
-      sleep_and_clear(2)
+      print(f"{Colours.fg.orange}You used {item_object.name_string}{Colours.fg.orange}.")
+      sleep_and_clear(1.5)
 
-
-    return item_to_use in self.items_dict and self.items_dict[item_to_use] != [None, 0]
-
-    if item_to_use != "back":
-      self.remove_item(item_to_use)
+    
+      
+    return player_used_item
 
 
 
