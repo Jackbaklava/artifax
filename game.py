@@ -39,7 +39,9 @@ You are about to fight the Game's Boss {entities.talgrog_the_giant.name_string}{
                         "trv" : entities.new_player.travel,
                         "bkp" : entities.new_player.open_backpack,
                         "shp" : objects.Shop.display_menu,
-                        "art" : entities.new_player.open_artipedia
+                        "art" : entities.new_player.open_artipedia,
+                        "hlp" : entities.new_player.ask_for_help,
+                        "tip" : entities.new_player.get_tip
   }
   
 
@@ -66,6 +68,9 @@ Things You Can Do:{Colours.reset}
 {Colours.tag("bkp")} {tags_explanation_colour}Open Your Backpack
 {Colours.tag("shp")} {tags_explanation_colour}Open The Shop
 {Colours.tag("art")} {tags_explanation_colour}Open Artipedia
+
+{Colours.tag("hlp")} {Colours.fg.cyan}Ask For Help
+{Colours.tag("tip")} {Colours.fg.cyan}Get A Useful Tip
 
 {Colours.input_colour + Colours.bold}
 What Would You Like To Do?{Colours.reset}""")
