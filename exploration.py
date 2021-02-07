@@ -4,7 +4,7 @@ import objects
 import entities
 from setting import all_artifacts, grimsden
 from system import System, clear, sleep_and_clear
-import random as rdm
+import random
 
 
 
@@ -12,7 +12,7 @@ class Combat:
   @staticmethod
   def choose_enemy(enemy_chosen):
     if enemy_chosen == None:
-      rdm_int = rdm.randint(1, 200)
+      rdm_int = random.randint(1, 200)
 
       #filters
       enemies_filtered_by_location = list(filter(lambda x: entities.new_player.current_location in entities.all_enemies[x].spawn_location, entities.all_enemies))

@@ -2,7 +2,7 @@ from colours import Colours
 import exploration
 import objects
 import operator
-import random as rdm
+import random
 import setting
 from system import System, sleep, clear, sleep_and_clear
 
@@ -84,7 +84,7 @@ class Armour:
     elif player_armour_score < enemy_armour_score:
       int_range = range(1, 26)
 
-    rdm_int = rdm.randint(1, 100)
+    rdm_int = random.randint(1, 100)
     return rdm_int in int_range
 
 
@@ -337,7 +337,7 @@ class Player(Entity):
           
           self.heal(100)
 
-          rdm_int = rdm.randint(1,5)
+          rdm_int = random.randint(1,5)
           if rdm_int == 5:
             exploration.Combat.start(goblin, is_players_turn=False)
             
@@ -360,10 +360,10 @@ class Player(Entity):
 
   def attack(self):
     clear()
-    rdm_int = rdm.randint(1, self.weapon.accuracy)
+    rdm_int = random.randint(1, self.weapon.accuracy)
 
     if rdm_int == 1:
-      rdm_int = rdm.randint(1,2)
+      rdm_int = random.randint(1,2)
       if rdm_int == 1:
         print(f"{self.current_enemy.name_string}{Colours.fg.cyan} dodged your attack.")
       else:
@@ -373,9 +373,9 @@ class Player(Entity):
     else:
       multiplier = 1
       damage_range = self.weapon.damage
-      raw_damage = rdm.randint(damage_range[0], damage_range[1])
+      raw_damage = random.randint(damage_range[0], damage_range[1])
 
-      rdm_int = rdm.randint(1, self.weapon.crit_chance)
+      rdm_int = random.randint(1, self.weapon.crit_chance)
 
       if rdm_int == 1:
         print(f"{Colours.fg.orange + Colours.bold + Colours.underline}It's a critical hit!!!{Colours.reset}")
@@ -410,7 +410,35 @@ class Player(Entity):
     
     self.current_location = location
     self.can_travel = False
-    
+
+
+  @staticmethod
+  def ask_for_help():
+    clear()
+    print(f"{Colours.fg.orange}You are stuck inside the game of {Colours.fg.green + Colours.underline}Artifax{Colours.reset + Colours.fg.orange} and in order to escape, you need to beat the game's boss, {talgrog_the_giant.name_string}{Colours.fg.orange}. But first, you need to explore each location to beat their respective {Colours.fg.red + Colours.bold}Artifact Keepers{Colours.reset + Colours.fg.orange}, who will drop artifacts upon dying. After you have collected all the artifacts, you will automatically be teleported to the final location, {setting.grimsden.name_string}{Colours.fg.orange}." + '\n')
+
+    print(f"{Colours.tag('ProTip')} {Colours.fg.lightblue}Type '{Colours.fg.green}tip{Colours.fg.lightblue}'' in the main menu for a useful game tip." + '\n')
+
+    input(f"{Colours.input_colour}> ")
+
+
+  @staticmethod
+  def get_tip():
+    tips = ("Buy and use different types of items to gain an edge in combat.",
+            "Sleep to regenerate upto 100% of your health. But be aware of nightmares!",
+            "When in doubt, escape from combat.",
+            "Type 'bkp' in the main menu to access your inventory, weapon, and armour.",
+            "Try out all the different commands in the main menu.",
+            "Weapons with higher crit chance increase the chance of landing a double damage hit on your enemy.",
+            "Read this amazing article on how to be the best at this game: https://bit.ly/3bim457"
+    )
+
+    rdm_tip = random.choice(tips)
+
+    clear()
+    print(f"{Colours.fg.yellow}{rdm_tip}" + '\n')
+    input(f"{Colours.input_colour}> ")
+
     
   has_all_artifacts = lambda self: len(self.artifacts_collected) == self.total_artifacts
   
@@ -438,7 +466,7 @@ class Enemy(Entity):
   def choose_combat_action(self):
     #Boss
     if isinstance(self, Boss):
-      rdm_int = rdm.randint(1, 100)
+      rdm_int = random.randint(1, 100)
       
       if rdm_int in self.attacking_chance:
         self.attack()
@@ -458,11 +486,11 @@ class Enemy(Entity):
 
   def attack(self):
     clear()
-    rdm_int = rdm.randint(1, self.weapon.accuracy)
+    rdm_int = random.randint(1, self.weapon.accuracy)
 
     #Enemy missed its attack
     if rdm_int == 1:
-      rdm_int = rdm.randint(1,2)
+      rdm_int = random.randint(1,2)
       if rdm_int == 1:
         print(f"{Colours.fg.cyan}You dodged {self.name_string}{Colours.fg.cyan}'s attack.")
       else:
@@ -471,7 +499,7 @@ class Enemy(Entity):
     #Enemy hit its attack
     else:
       damage_range = self.weapon.damage
-      raw_damage = rdm.randint(damage_range[0], damage_range[1])
+      raw_damage = random.randint(damage_range[0], damage_range[1])
 
       damage_dealt = new_player.take_damage(raw_damage)
 
@@ -481,7 +509,7 @@ class Enemy(Entity):
 
 
   def drop_gold_coins(self):
-    gold_coins_dropped = rdm.randint(self.gold_coins_drop[0], self.gold_coins_drop[1])
+    gold_coins_dropped = random.randint(self.gold_coins_drop[0], self.gold_coins_drop[1])
     new_player.gold_coins += gold_coins_dropped
     
     print(f"{Colours.fg.lightblue}You recieved {Colours.fg.yellow}{gold_coins_dropped} gold coins{Colours.fg.lightblue}.")
@@ -525,7 +553,7 @@ class Enemy(Entity):
     sleep_and_clear(2)
 
     if not self is artifact_keeper and not self is talgrog_the_giant:
-      rdm_int = rdm.randint(1, 100)
+      rdm_int = random.randint(1, 100)
 
       #drop gold coins
       if rdm_int in range(1, 91):
