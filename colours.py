@@ -1,4 +1,3 @@
-#COMMIT_TO_GITHUB
 class Colours: 
   reset='\033[0m'
   underline='\033[04m' 
@@ -40,7 +39,7 @@ class Colours:
   heading_colour = fg.red
   heading = lambda string, colour=heading_colour: f"{colour + Colours.underline}{string}{Colours.reset}"
 
-  alert = lambda string: f"{Colours.fg.red + Colours.underline}{string}{Colours.reset}"
+  alert = lambda string: f"{Colours.fg.red + Colours.bold + Colours.underline}{string}{Colours.reset}"
 
   none_string = f"{fg.cyan}- - - - - - - -"
   

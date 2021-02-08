@@ -22,7 +22,6 @@ class Object:
     updates = updates[attributes_dict is self.increases]
     updates_dict, entity, update_type = updates["dict"], updates["name"], updates["update_type"]
 
-    #Increased effects AKA description[0]
     updated_attributes = ' '
     updated_by = ' ' 
     
@@ -83,7 +82,6 @@ all_items = { "vlohg" : vial_of_healing,
 
 
 def display_equipment_stats(key,  display_price=True, display_name=True, item_quantity='', extra_text=None):
-  #jUST MAKE A COLLECTION!!!
   if key in entities.all_player_weapons or key in entities.all_player_armour or key in all_items or key in new_inventory.items_dict:
     key_to_display = Colours.tag(key) + ' '
     space_to_display = System.indent(key)
@@ -292,10 +290,9 @@ class PlayerInventory:
       #Remove item
       self.remove_item(player_choice)
 
-      #Applying item effects to player
+      #Applying item effects
       entities.new_player.apply_item_effects("Increase", item_object.increases)
 
-      #Applying item effects to enemy
       entities.new_player.current_enemy.apply_item_effects("Decrease", item_object.decreases)
 
       #Incrementing turns
@@ -304,7 +301,6 @@ class PlayerInventory:
       clear()
       print(f"{Colours.fg.orange}You used {item_object.name_string}{Colours.fg.orange}.")
       sleep_and_clear(1.5)
-
     
       
     return player_used_item
@@ -319,12 +315,13 @@ class Shop:
   @staticmethod
   def display_initial_message(category):
     clear()
-    print(f"""{Colours.fg.orange}Which {category} would you like to buy?
-{Colours.fg.cyan}(Type the {Colours.fg.green}green letters {Colours.fg.cyan}in square brackets according to the {category} you want to buy)
-(Type '{Colours.fg.red}back{Colours.fg.cyan}' to go back){Colours.fg.yellow}
+    print(f"""{Colours.fg.red + Colours.bold}Which {category} would you like to buy?{Colours.reset}
 
-{f"{Colours.fg.yellow + Colours.underline}You have {entities.new_player.gold_coins} gold coins{Colours.reset + Colours.fg.yellow}".center(130, "|")}
-""")#need to make this better
+{Colours.fg.orange}(Type the {Colours.fg.green}green letters {Colours.fg.orange}in square brackets according to the {category} you want to buy)
+(Type '{Colours.fg.red}back{Colours.fg.orange}' to go back){Colours.fg.yellow}
+
+{f"{Colours.fg.yellow + Colours.underline}You have {entities.new_player.gold_coins} gold coins{Colours.reset + Colours.fg.yellow}".center(110, "|")}
+""")
 
 
   @classmethod
@@ -336,8 +333,8 @@ class Shop:
     if isinstance(cls.equipment_to_purchase, Item):
       while type(player_choice) != int:
         clear()
-        player_choice = input(f"""{Colours.fg.blue}How many {Colours.fg.orange + 
-Colours.underline}{cls.equipment_to_purchase.name}s{Colours.reset + Colours.fg.blue} would you like to buy?
+        player_choice = input(f"""{Colours.fg.yellow}How many {Colours.fg.orange + 
+Colours.underline}{cls.equipment_to_purchase.name}s{Colours.reset + Colours.fg.yellow} would you like to buy?
 
 {Colours.fg.cyan}(Type a {Colours.fg.green}number{Colours.fg.cyan})
 {Colours.fg.orange}
@@ -346,7 +343,7 @@ Colours.underline}{cls.equipment_to_purchase.name}s{Colours.reset + Colours.fg.b
           player_choice = int(player_choice)
         except ValueError:
            clear()
-           print(f"{Colours.fg.red + Colours.underline}Please enter a number.{Colours.reset}")
+           print(f"{Colours.alert('PLEASE ENTER A NUMBER!!!')}")
            sleep(2)
 
       cls.equipment_quantity = player_choice
@@ -354,11 +351,11 @@ Colours.underline}{cls.equipment_to_purchase.name}s{Colours.reset + Colours.fg.b
 
 
     clear()
-    print(f"""{Colours.fg.blue}Are you sure you want to buy {Colours.fg.red + 
-Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purchase.name_string}{Colours.fg.blue} for {Colours.fg.yellow + Colours.underline}{cls.total_price} gold coins{Colours.reset + Colours.fg.blue}?
+    print(f"""{Colours.fg.yellow}Are you sure you want to buy {Colours.fg.red + 
+Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purchase.name_string}{Colours.fg.yellow} for {Colours.fg.red + Colours.underline}{cls.total_price} gold coins{Colours.reset + Colours.fg.yellow}?
 
-{Colours.fg.cyan}(Type the {Colours.fg.green}green letters {Colours.fg.cyan}in square brackets to {Colours.fg.green}confirm your purchase{Colours.fg.cyan})
-{Colours.fg.cyan}(Type '{Colours.fg.red}back{Colours.fg.cyan}' to go back)
+{Colours.fg.yellow}(Type {Colours.fg.green}y{Colours.fg.yellow} to {Colours.fg.green}confirm your purchase{Colours.fg.yellow})
+{Colours.fg.yellow}(Type '{Colours.fg.red}back{Colours.fg.yellow}' to go back)
 
 {Colours.fg.green + Colours.underline}{cls.equipment_to_purchase.category.capitalize()} you want to buy:{Colours.reset}""")
 
@@ -397,6 +394,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
 
     cls.has_made_purchase = False
 
+    #Initialize equipment_dict
     if category == "weapon":
       cls.equipment_dict = entities.all_player_weapons
     elif category == "armour":
@@ -404,6 +402,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
     elif category == "item":
       cls.equipment_dict = all_items
 
+    #main shop loop
     while first_player_choice not in valid_inputs_to_go_back and cls.has_made_purchase == False:
 
       cls.display_initial_message(category)
@@ -416,11 +415,13 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
 
       first_player_choice = input(f"{Colours.fg.orange}> ").lower().strip()
 
+      #Check if player wants to buy something
       if first_player_choice in cls.equipment_dict:
         cls.key_of_equipment_to_purchase = first_player_choice
         cls.equipment_to_purchase = cls.equipment_dict[first_player_choice]
         second_player_choice = ''
 
+        #Ask for confirmation
         while second_player_choice not in valid_inputs_to_go_back and cls.has_made_purchase == False:
 
           cls.display_confirmation_message()
@@ -430,7 +431,8 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
           
           second_player_choice = input(f"{Colours.fg.orange}> ").lower().strip()
 
-          if second_player_choice == cls.key_of_equipment_to_purchase:
+          #Check if player has confirmed purchase confirmation
+          if second_player_choice == "y":
             cls.handle_money()
             cls.has_made_purchase = True
 
@@ -444,7 +446,7 @@ Colours.underline}{cls.equipment_quantity}{Colours.reset} {cls.equipment_to_purc
       clear()
       System.print_title("SHOP")
 
-      player_choice = input(f"""{Colours.fg.orange}What would you like to buy?
+      player_choice = input(f"""{Colours.fg.orange + Colours.bold}What would you like to buy?{Colours.reset}
 
 {Colours.tag("weapon") + Colours.fg.red} Weapons
 {Colours.tag("armour") + Colours.fg.blue} Armour
