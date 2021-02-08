@@ -301,16 +301,16 @@ class Player(Entity):
 
 
   def sleep_for_health(self):
-    player_choice = ""
-    valid_inputs = ('short', 'long', 'back')
-    not_tired_string = f"{Colours.fg.red + Colours.underline}You Try To Sleep, But Feel Well Rested. Get Tired By Defeating Enemies In The Wilderness."
+    player_choice = ''
+    valid_inputs = ("short", "long", "back")
+    not_tired_string = f"{Colours.alert('You Try To Sleep, But Feel Well Rested. Get Tired By Defeating Enemies In The Wilderness.')}"
     
     while player_choice not in valid_inputs:
       clear()
       player_choice = input(f"""{Colours.fg.orange}Which rest would you like to take?
 
-{Colours.fg.green + Colours.underline}[short]{Colours.reset + Colours.fg.yellow} Short Rest {Colours.fg.red + Colours.underline}(Heals 50% of your health){Colours.reset}
-{Colours.fg.green + Colours.underline}[long]{Colours.reset + Colours.fg.yellow} Long Rest {Colours.fg.red + Colours.underline}(Heals 100% of your health{Colours.reset + Colours.fg.red} + {Colours.fg.red + Colours.underline}Chance to get attacked{Colours.reset + Colours.fg.red})
+{Colours.tag("short")} {Colours.fg.yellow}Short Rest {Colours.fg.red + Colours.underline}(Heals 50% of your health){Colours.reset}
+{Colours.tag("long")} {Colours.fg.yellow}Long Rest {Colours.fg.red + Colours.underline}(Heals 100% of your health{Colours.reset + Colours.fg.red} + {Colours.fg.red + Colours.underline}Chance to get attacked{Colours.reset + Colours.fg.red})
 
 {Colours.tag('back')} {Colours.fg.yellow} Go Back
 
@@ -319,7 +319,8 @@ class Player(Entity):
 
       clear()
 
-      if player_choice == 'short':
+      #Player is taking short rest
+      if player_choice == "short":
         if self.is_tired[0] and self.is_tired[1]:
           self.is_tired[0] = False
           self.is_tired[1] = False
@@ -331,13 +332,15 @@ class Player(Entity):
           sleep_and_clear(3)
 
 
-      elif player_choice == 'long':
+      #Player is taking long rest
+      elif player_choice == "long":
         if False not in self.is_tired:
           self.is_tired = [False, False, False]
           
           self.heal(100)
 
           rdm_int = random.randint(1,5)
+          #Player got a nightmare
           if rdm_int == 5:
             exploration.Combat.start(goblin, is_players_turn=False)
             
@@ -362,6 +365,7 @@ class Player(Entity):
     clear()
     rdm_int = random.randint(1, self.weapon.accuracy)
 
+    #Player missed attack
     if rdm_int == 1:
       rdm_int = random.randint(1,2)
       if rdm_int == 1:
@@ -370,6 +374,7 @@ class Player(Entity):
         print(f"{Colours.fg.lightblue}You missed your attack.")
       sleep_and_clear(1.5)
 
+    #Player hit attack
     else:
       multiplier = 1
       damage_range = self.weapon.damage
@@ -377,6 +382,7 @@ class Player(Entity):
 
       rdm_int = random.randint(1, self.weapon.crit_chance)
 
+      #Player hit a critical hit (double damage)
       if rdm_int == 1:
         print(f"{Colours.fg.orange + Colours.bold + Colours.underline}It's a critical hit!!!{Colours.reset}")
         multiplier *= 2
@@ -472,10 +478,12 @@ class Enemy(Entity):
         self.attack()
 
       else:
+        #Heal 50% health
         if self.current_health <= System.calculate_percentage(total=self.max_health, percentage=50) and self.has_healed == False:
           self.heal(50)
           self.has_healed = True
 
+        #Stun player (10 damage + extra turn)
         else:
           self.stun()
           
@@ -496,7 +504,7 @@ class Enemy(Entity):
       else:
         print(f"{self.name_string}{Colours.fg.cyan} missed it's attack.")
 
-    #Enemy hit its attack
+    #Enemy hit attack
     else:
       damage_range = self.weapon.damage
       raw_damage = random.randint(damage_range[0], damage_range[1])
@@ -533,7 +541,7 @@ class Enemy(Entity):
 
       print(f"""{Colours.fg.orange}Are you sure you want to equip {equipment_to_drop.name_string} {Colours.fg.orange}?
       
-{Colours.tag("y")} {Colours.fg.blue}Yes
+{Colours.tag('y')} {Colours.fg.blue}Yes
 {Colours.tag('n')} {Colours.fg.blue}No  
       """)
 
@@ -555,18 +563,18 @@ class Enemy(Entity):
     if not self is artifact_keeper and not self is talgrog_the_giant:
       rdm_int = random.randint(1, 100)
 
-      #drop gold coins
+      #Drop gold coins
       if rdm_int in range(1, 91):
         self.drop_gold_coins()
 
-      #drop weapon
+      #Drop weapon
       elif rdm_int in range(91, 96):
         if self.weapon.can_drop:
           self.drop_equipment(self.weapon)
         else:
           self.drop_gold_coins()
 
-      #drop armour
+      #Drop armour
       elif rdm_int in range(96, 101):
         if self.armour.can_drop:
           self.drop_equipment(self.armour)
@@ -574,7 +582,7 @@ class Enemy(Entity):
           self.drop_gold_coins()
 
 
-    #drop artifact
+    #Drop artifact
     elif self is artifact_keeper:
       filtered_artifacts = list(filter(lambda artifact: artifact.location is new_player.current_location, setting.all_artifacts))
       

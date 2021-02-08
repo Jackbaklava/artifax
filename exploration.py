@@ -202,7 +202,6 @@ What Would You Like To Do?
 
       #Enemy's turn
       if not entities.new_player.has_combat_turn:
-        #entities.new_player.has_combat_turn = True
         entities.new_player.current_enemy.choose_combat_action()
 
     

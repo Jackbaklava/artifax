@@ -50,7 +50,7 @@ You are about to fight the Game's Boss {entities.talgrog_the_giant.name_string}{
     tags_explanation_colour = Colours.fg.yellow
 
     clear()
-    System.print_title('ARTIFAX')
+    System.print_title("ARTIFAX")
 
     print(f"""
 {Colours.heading("Your Health:")} {Colours.fg.green}{entities.new_player.current_health} / {entities.new_player.max_health}
@@ -78,7 +78,7 @@ What Would You Like To Do?{Colours.reset}""")
 
   @staticmethod
   def display_death_message():
-    print(f"{Colours.fg.red + Colours.bold + Colours.underline}RIP")
+    print(f"{Colours.alert('RIP')}")
     input(f"{Colours.input_colour}> ")
 
 
@@ -88,23 +88,36 @@ What Would You Like To Do?{Colours.reset}""")
     input(f"{Colours.input_colour}> ")
 
 
+  @staticmethod
+  def display_screen_alert():
+    print(f"{Colours.fg.yellow}NOTE: For the most fluid gameplay, please make sure that your screen/console size is set to max. You can do that by moving the slider on the left side to the far left." + '\n')
+
+    print(f"{Colours.fg.orange}(Press ENTER to continue)" + '\n')
+
+    input(f"{Colours.input_colour}> ")
+
+
   @classmethod
   def play(cls):
     while not entities.new_player.is_dead() and not entities.new_player.current_enemy is entities.talgrog_the_giant:
       if entities.new_player.main_menu_choice == None:
+        #Display main menu
         cls.display_main_menu()
         entities.new_player.main_menu_choice = input(f"{Colours.input_colour}> ").lower().strip()
 
       GameState.save_account()
 
+      #Try to execute player's choice
       try:
         cls.main_menu_choices[entities.new_player.main_menu_choice]()
 
+      #Player entered invalid choice
       except KeyError:
         clear()
         print(f"{Colours.alert('INVALID COMMAND, TYPE THE LETTERS IN THE SQUARE BRACKETS.')}")
         sleep_and_clear(2)
 
+      #Reset player choice
       entities.new_player.main_menu_choice = None
 
       GameState.save_account()
@@ -113,10 +126,12 @@ What Would You Like To Do?{Colours.reset}""")
     if entities.new_player.current_enemy is entities.talgrog_the_giant and not entities.new_player.has_won:
       exploration.Combat.start_combat()
 
+    #Player is dead
     if entities.new_player.is_dead():
       cls.display_death_message()
       GameState.reset_account()
 
+    #Player has won
     else:
       cls.display_win_message()
       GameState.reset_account()
@@ -158,8 +173,8 @@ class GameState:
     
     while not cls.logged_in:
       clear()
-      print(f"""{Colours.fg.orange}
-Which of the following would you like to do?
+      print(f"""{Colours.fg.orange + Colours.bold}
+Which of the following would you like to do?{Colours.reset}
 {Colours.fg.lightblue}(Type the number in the square brackets)
 
 {Colours.tag('1')} {Colours.fg.orange}Sign up for a new, fresh account
