@@ -90,7 +90,7 @@ What Would You Like To Do?{Colours.reset}""")
 
   @staticmethod
   def display_screen_alert():
-    print(f"{Colours.fg.yellow}NOTE: For the most fluid gameplay, please make sure that your screen/console size is set to max. You can do that by moving the slider on the left side to the far left." + '\n')
+    print(f"{Colours.fg.yellow}NOTE: For the most fluid gameplay, please make sure that your screen/console size is set to max." + '\n')
 
     print(f"{Colours.fg.orange}(Press ENTER to continue)" + '\n')
 
