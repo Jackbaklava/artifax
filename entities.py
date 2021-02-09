@@ -49,7 +49,8 @@ excalibur = Weapon("Excalibur", (45, 60), 17, crit_chance=5, price=350)
 
 all_player_weapons = { "insd" : iron_sword,
                        "gtae" : great_axe,
-                       "al" : anduril
+                       "al" : anduril,
+                       "ex" : excalibur
 }
 
 
