@@ -67,17 +67,20 @@ class Item(Object):
 
 vial_of_healing = Item("Vial of Healing", price=25, increases={"current_health" : 25})
 
-flask_of_healing = Item("Flask of Healing", price=25, increases={"current_health" : 50})
+flask_of_healing = Item("Flask of Healing", price=50, increases={"current_health" : 50})
 
-kings_elixir = Item("King's Elixir", 25, 2, increases={"armour.defense" : 25, "weapon.accuracy" : 50})
+purple_slush = Item("Purple Slush", 50, 3, increases={"armour.defense" : 10, "weapon.accuracy" : 20, "weapon.crit_chance" : 10})
 
-dragons_amulet = Item("Dragon's Amulet", 25, 2, decreases={"armour.defense" : 50})
+kings_elixir = Item("King's Elixir", 70, 2, increases={"armour.defense" : 25, "weapon.accuracy" : 50})
+
+golems_breath = Item("Dragon's Amulet", 200, 2, increases={"weapon.accuracy" : 50}, decreases={"armour.defense" : 40})
 
 
 all_items = { "vlohg" : vial_of_healing,
               "fkohg" : flask_of_healing,
+              "purp" : purple_slush
               "kser" : kings_elixir,
-              "dsat" : dragons_amulet
+              "gsbh" : golems_breath
 }
 
 

@@ -34,15 +34,18 @@ class Weapon:
 
 
 #Enemy weapons
-rusty_sword = Weapon("Rusty Sword", (3, 19), 7, can_drop=True)
-mortemir = Weapon("Mortemir", (12, 30), 15)
-doomsblade = Weapon("Doomsblade", (10, 45), 20)
+common_weapon = Weapon("Common Armour", (5, 10), 5)
+rare_weapon = Weapon("Rare Weapon", (20, 30), 10)
+epic_weapon = Weapon("Epic Weapon", (30, 50), 15)
+dragon_claws = Weapon("Dragon Claws", 35, 60, 25)
+doomsblade = Weapon("Doomsblade", (40, 70), 20)
 
 #Player weapons
-copper_katana = Weapon("Copper Katana", (3, 19), 8, crit_chance=20)
-iron_sword = Weapon("Iron Sword", (7, 25), 13, crit_chance=13, price=75)
-great_axe = Weapon("Great Axe", (15, 30), 9, crit_chance=8, price=150)
-anduril = Weapon("Andúril", (10, 30), 15, crit_chance=5, price=150)
+copper_katana = Weapon("Copper Katana", (3, 20), 7, crit_chance=20)
+iron_sword = Weapon("Iron Sword", (10, 25), 12, crit_chance=13, price=75)
+great_axe = Weapon("Great Axe", (15, 40), 9, crit_chance=8, price=120)
+anduril = Weapon("Andúril", (30, 50), 15, crit_chance=7, price=200)
+excalibur = Weapon("Excalibur", (45, 60), 17, crit_chance=5, price=350)
 
 all_player_weapons = { "insd" : iron_sword,
                        "gtae" : great_axe,
@@ -90,13 +93,17 @@ class Armour:
 
 
 #Enemy armour
-darkmail = Armour("Darkmail", 0.8, "Medium", can_drop=True)
+common_armour = Armour("Common Armour", 0.9, "Light")
+rare_armour = Armour("Rare Armour", 0.75, "Medium")
+epic_armour = Armour("Epic Armour", 0.65, "Medium")
+dragon_skin = Armour("Dragon Skin", 0.6, "Light")
+darkmail = Armour("Darkmail", 0.5, "Heavy")
 
 #Player armour
-leather_tunic = Armour("Leather Tunic", 1, "Light", 0)
-chainmail = Armour("Chanimail", 0.75, "Medium", 100)
+leather_tunic = Armour("Leather Tunic", 1, "Light")
+chainmail = Armour("Chanimail", 0.8, "Medium", 100)
 mithril_chestplate = Armour("Mithril Chestplate", 0.65, "Light", 175)
-guardian_armour = Armour("Guardian Armour", 0.4, "Heavy", 200)
+guardian_armour = Armour("Guardian Armour", 0.5, "Heavy", 400)
 
 all_player_armour = { "cl" : chainmail,
                       "mlce" : mithril_chestplate,
@@ -456,7 +463,7 @@ new_player = Player()
 
 
 class Enemy(Entity):
-  def __init__(self, name, max_health, armour, weapon, spawn_location, spawn_range, gold_coins_drop=(1,50)):
+  def __init__(self, name, max_health, armour, weapon, spawn_location, spawn_range, gold_coins_drop=(1, 2)):
     self.name_string = f"{Colours.enemy_colour}{name}{Colours.reset}"
     self.max_health = max_health
     self.armour = armour
@@ -598,23 +605,23 @@ class Enemy(Entity):
 
 
 #Enemies that spawn in Valley of Dawn
-bandit = Enemy("Bandit", 65, darkmail, rusty_sword, ["vod"], (1, 191))
-goblin = Enemy("Goblin", 50, darkmail, rusty_sword, ["vod"], (191, 201))
+bandit = Enemy("Bandit", 65, common_armour, common_weapon, ["vod"], (1, 191), gold_coins_drop=(1, 5))
+goblin = Enemy("Goblin", 50, common_armour, common_weapon, ["vod"], (191, 201), gold_coins_drop=(1, 10))
 
 #Enemies that spawn in Forest of Fangarr
-orc = Enemy("Orc", 90, darkmail, rusty_sword, ["fof"], (1, 81))
-bone_bat = Enemy("Bone Bat", 50, darkmail, rusty_sword, ["fof"], (81, 131))
-owl_bear = Enemy("Owlbear", 120, darkmail, rusty_sword, ["fof"], (161, 191))
-ashwing = Enemy("Ashwing", 50, darkmail, rusty_sword, ["fof"], (191, 201))
+orc = Enemy("Orc", 90, common_armour, common_weapon, ["fof"], (1, 71), gold_coins_drop=(5, 15))
+bone_bat = Enemy("Bone Bat", 50, common_armour, rare_weapon, ["fof"], (71, 161), gold_coins_drop=(1, 6))
+owl_bear = Enemy("Owlbear", 120, rare_armour, epic_weapon, ["fof"], (161, 196), gold_coins_drop=(30, 50))
+ashwing = Enemy("Ashwing", 120, dragon_skin, dragon_claws, ["fof"], (196, 201), gold_coins_drop=(80, 200))
 
 #Enemies that spawn in Iron Mountains
-highland_orc = Enemy("Highland Orc", 100, darkmail, rusty_sword, ["im"], (1, 71))
-gargoyle = Enemy("Gargoyle", 70, darkmail, rusty_sword, ["im"], (71, 121))
-night_hunter = Enemy("Night Hunter", 100, darkmail, rusty_sword, ["im"], (121, 161))
-kavauri = Enemy("Kavauri", 150, darkmail, rusty_sword, ["im"], (191, 201))
+highland_orc = Enemy("Highland Orc", 100, rare_armour, rare_weapon, ["im"], (1, 71), gold_coins_drop=(2, 15))
+gargoyle = Enemy("Gargoyle", 80, epic_armour, rare_weapon, ["im"], (71, 161), gold_coins_drop=(20, 30))
+night_hunter = Enemy("Night Hunter", 110, darkmail, epic_weapon, ["im"], (161, 196), gold_coins_drop=(50, 100))
+kavauri = Enemy("Kavauri", 150, dragon_skin, dragon_claws, ["im"], (196, 201), gold_coins_drop=(150, 300))
 
 #Artifact Keeper can spawn in any location
-artifact_keeper = Enemy("Artifact Keeper", 15, darkmail, rusty_sword, ["vod", "fof", "im"], (191, 201))
+artifact_keeper = Enemy("Artifact Keeper", 15, darkmail, doomsblade, ["vod", "fof", "im"], (191, 201))
 
 
 all_enemies = { "goblin" : goblin,
