@@ -127,7 +127,7 @@ class Storyline:
 
     you.speak("And how do I travel to Grimsden?")
 
-   old_man.speak(f"Since Grimsden is located in the far corner of the universe, you can't travel there by foot. So, you first need to collect the {len(all_artifacts)} Artifacts of Power and make a portal to Grimsden. You can collect these artifacts by defeating the Artifact Keeper of every location you explore.")
+    old_man.speak(f"Since Grimsden is located in the far corner of the universe, you can't travel there by foot. So, you first need to collect the {len(all_artifacts)} Artifacts of Power and make a portal to Grimsden. You can collect these artifacts by defeating the Artifact Keeper of every location you explore.")
 
     you.speak("Woah! That's alot of stuff to do.")
 

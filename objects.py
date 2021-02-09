@@ -78,7 +78,7 @@ golems_breath = Item("Dragon's Amulet", 200, 2, increases={"weapon.accuracy" : 5
 
 all_items = { "vlohg" : vial_of_healing,
               "fkohg" : flask_of_healing,
-              "purp" : purple_slush
+              "purp" : purple_slush,
               "kser" : kings_elixir,
               "gsbh" : golems_breath
 }
@@ -168,9 +168,9 @@ def display_current_equipment_stats(category):
 class PlayerInventory:
   def __init__(self):
     self.items_dict = { '1' : [None, 0],
-                        '2' : [flask_of_healing, 1],
-                        '3' : [dragons_amulet, 23],
-                        '4' : [kings_elixir, 2],
+                        '2' : [None, 0],
+                        '3' : [None, 0],
+                        '4' : [None, 0],
                         '5' : [None, 0]
     }
     self.total_slots = len(self.items_dict)

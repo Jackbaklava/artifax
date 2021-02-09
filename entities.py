@@ -37,7 +37,7 @@ class Weapon:
 common_weapon = Weapon("Common Armour", (5, 10), 5)
 rare_weapon = Weapon("Rare Weapon", (20, 30), 10)
 epic_weapon = Weapon("Epic Weapon", (30, 50), 15)
-dragon_claws = Weapon("Dragon Claws", 35, 60, 25)
+dragon_claws = Weapon("Dragon Claws", (35, 60), 25)
 doomsblade = Weapon("Doomsblade", (40, 70), 20)
 
 #Player weapons
@@ -206,8 +206,8 @@ class Entity:
 
 
 class TemporaryEnemy(Entity):
-  armour = darkmail
-  weapon = rusty_sword
+  armour = common_armour
+  weapon = common_weapon
 
   attributes = locals()
 
@@ -217,10 +217,10 @@ class Player(Entity):
   #I didn't put all the attributes as parameters because it looks ugly, and because any instances created from this class will always have these default arguments
   def __init__(self):
     self.main_menu_choice = None
-    self.current_health = 200
-    self.max_health = 200
+    self.current_health = 100
+    self.max_health = 100
     self.armour = leather_tunic
-    self.weapon = anduril
+    self.weapon = copper_katana
     self.current_location = setting.all_locations["vod"]
     self.gold_coins = 50
 
