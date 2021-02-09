@@ -222,7 +222,7 @@ class Player(Entity):
     self.armour = leather_tunic
     self.weapon = copper_katana
     self.current_location = setting.all_locations["vod"]
-    self.gold_coins = 50
+    self.gold_coins = 0
 
     self.artifacts_collected = []
     self.artifacts_not_collected = list(setting.all_artifacts)
